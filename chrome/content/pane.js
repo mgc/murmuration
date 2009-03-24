@@ -3,6 +3,7 @@
 // ADDITIONAL TODOS
 // * Handle losing the connection
 // * Handle multiple connections on the same account
+// * Actions
 
 var channel;
 
@@ -86,13 +87,36 @@ var onlineWidget = {
  */
 var activityWidget = {
   
+  
+  init: function() {
+    // TODO error handling
+    // TODO XXX set up account properly
+    var account = "mattc:XXX@";
+    $.getJSON("http://"+ account + "@skunk.grommit.com/api/statuses/friends_timeline.json",
+      function(data){
+        $("#activity-container").hide();
+        for each (var notification in data) {
+          var node = $("#notification-template > .notification").clone();
+          $("img", node).attr("src", notification.user.profile_image_url);
+          $(".content", node).text(notification.text);
+          node.appendTo("#activity-container")
+        }
+        $("#activity-container").fadeIn("slow");
+      });
+  },
+  
+  finish: function() {
+    
+  }
 }
+
+
 
 function init() {
   Components.utils.import('resource://xmpp4moz/xmpp.jsm');
   channel = XMPP.createChannel();
   onlineWidget.init();
-  //setTimeout(function() {  onlineWidget.setPresence("mattc", false); }, 4000);
+  activityWidget.init();
 }
 
 function finish() {
