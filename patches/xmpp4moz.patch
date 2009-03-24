@@ -1,0 +1,13 @@
+diff --git a/install.rdf b/install.rdf
+index 1a5d022..c2582e8 100644
+--- a/install.rdf
++++ b/install.rdf
+@@ -34,7 +34,7 @@
+       <Description>
+         <em:id>songbird@songbirdnest.com</em:id>
+         <em:minVersion>0.2</em:minVersion>
+-        <em:maxVersion>1.0+</em:maxVersion>
++        <em:maxVersion>1.2+</em:maxVersion>
+       </Description>
+     </em:targetApplication>
+ 

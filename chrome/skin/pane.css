@@ -1,0 +1,107 @@
+body {
+  margin: 0px;
+  font-family: helvetica, arial; 
+  color: white;
+  background-color: #0d0d0b;
+  background-image: url('/skin/pane-top.png');
+  background-position: top left;
+  background-repeat: repeat-x;
+  overflow: -moz-scrollbars-none;
+}
+
+h1 {
+  margin-left: 10px;
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+
+/** ONLINE USERS **/
+
+#online-container {
+  margin-top: 0px;
+  margin-left: 10px;
+  margin-bottom: 0px;
+  width: 100%;
+}
+img {
+  width: 24px;
+  height: 24px;  
+}
+
+
+/** ACTIVITY **/
+
+#activity-container {
+  margin-top: 0px;
+}
+
+.notification {
+  font-size: 10px;
+  margin-bottom: 5px;
+  padding-top: 3px;
+  padding-left: 10px;
+}
+
+.notification:hover {
+ background-color: #161616;
+}
+
+.avatar {
+  margin-right: 4px;
+  float: left;
+}
+
+.content {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+
+/** FOOTER **/
+
+#footer-container {
+  position: fixed; 
+  clear: both; 
+  width: 100%; 
+  bottom: 0; 
+  border: 0; 
+  padding-left: 10px; 
+  height: 40px;  
+  background-image: url('/skin/pane-bottom.png');
+  background-position: bottom left;
+  background-repeat: repeat-x;
+}
+
+#footer-container a {
+  position: relative; 
+  top: 14px;
+  font-size: 10px;
+  padding: 2px 5px 2px 5px;
+  -moz-border-radius:3px;
+  background-color: #4a4a4a;
+}
+
+
+
+/** HACKS **/
+
+.clearfix:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+ 
+.clearfix {
+	display: inline-block;
+}
+ 
+html[xmlns] .clearfix {
+	display: block;
+}
+ 
+* html .clearfix {
+	height: 1%;
+}

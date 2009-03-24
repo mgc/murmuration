@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#"
+     xmlns:songbird="http://www.songbirdnest.com/2007/addon-metadata-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>{b3ed606a-4fc0-ac4b-bfc0-4a89088fef3b}</em:id>
+    <em:type>2</em:type>
+    <em:name>Murmuration</em:name>
+    <em:version>1.0.0.0</em:version>
+    <em:creator>POTI</em:creator>
+
+    <em:description>Social Streaming - Prototype</em:description>
+
+    <em:targetApplication>
+      <Description>
+        <em:id>songbird@songbirdnest.com</em:id>
+        <em:minVersion>0.8.0pre</em:minVersion>
+        <em:maxVersion>1.2.0a</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+    
+    <em:requires>
+      <Description>
+        <em:id>xmpp4moz@hyperstruct.net</em:id>
+        <em:minVersion>0.0.1</em:minVersion>
+        <em:maxVersion>2010010100</em:maxVersion>
+      </Description>
+    </em:requires>
+
+    <!-- Register a pane to be displayed below the service sidebar.
+         See http://wiki.songbirdnest.com/Developer/Articles/Getting_Started/Display_Panes -->
+    <songbird:displayPane>
+      <Description>
+        <songbird:contentTitle>Murmuration</songbird:contentTitle>
+        <songbird:contentUrl>chrome://murmuration/content/pane.xhtml</songbird:contentUrl>
+        <songbird:contentIcon>chrome://murmuration/skin/pane-icon.png</songbird:contentIcon>
+        <songbird:defaultWidth>200</songbird:defaultWidth>
+        <songbird:defaultHeight>300</songbird:defaultHeight>
+        <songbird:suggestedContentGroups>servicepane</songbird:suggestedContentGroups>
+        <songbird:showOnInstall>true</songbird:showOnInstall>
+      </Description>
+    </songbird:displayPane>
+
+  </Description>
+</RDF>

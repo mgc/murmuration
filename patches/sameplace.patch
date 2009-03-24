@@ -1,0 +1,25 @@
+diff --git a/install.rdf b/install.rdf
+index f74dfc5..fd7c181 100644
+--- a/install.rdf
++++ b/install.rdf
+@@ -40,13 +40,13 @@
+    
+     <!-- songbird -->
+ 
+-    <!-- <em:targetApplication> -->
+-    <!--   <Description> -->
+-    <!--     <em:id>songbird@songbirdnest.com</em:id> -->
+-    <!--     <em:minVersion>0.4</em:minVersion> -->
+-    <!--     <em:maxVersion>1.0+</em:maxVersion> -->
+-    <!--   </Description> -->
+-    <!-- </em:targetApplication> -->
++    <em:targetApplication>
++       <Description>
++         <em:id>songbird@songbirdnest.com</em:id>
++         <em:minVersion>0.4</em:minVersion>
++         <em:maxVersion>1.2+</em:maxVersion>
++       </Description>
++    </em:targetApplication>
+     
+     <em:name>SamePlace</em:name>
+     <em:description>Extensible, multi-network instant messenger</em:description>
