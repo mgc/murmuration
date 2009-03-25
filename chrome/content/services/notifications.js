@@ -48,6 +48,12 @@ function init() {
     Ci.sbIMediaList.LISTENER_FLAGS_BATCHBEGIN | 
     Ci.sbIMediaList.LISTENER_FLAGS_BATCHEND);  
   
+  // Check to see if Last.fm is installed and add a listener if it is
+  if ("sbILastFm" in Ci) {
+	  this.lfm = Cc["@songbirdnest.com/lastfm;1"].getService().wrappedJSObject;
+	  this.lfm.listeners.add(this);
+  }
+
   // TODO fill the rest in...
   dump("\nnotification init complete\n");
 }
@@ -60,6 +66,7 @@ function finish() {
     channel.release();
     delete alertsService;
     LibraryUtils.mainLibrary.removeListener(this);
+	this.lfm.listeners.remove(this);
 }
 
 
@@ -122,7 +129,35 @@ function onBatchEnd(aMediaList) {
   batchCount--;  
 }
 
-
+// sbILastFm Listener
+function onShouldScrobbleChanged() { return true; }
+function onUserLoggedOutChanged() { return true; }
+function onErrorChanged() { return true; }
+function onLoggedInStateChanged() { return true; }
+function onLoginBegins() { return true; }
+function onLoginFailed() { return true; }
+function onLoginCancelled() { return true; }
+function onLoginSucceeded() { return true; }
+function onProfileUpdated() { return true; }
+function onAuthorisationSuccess() { return true; }
+function onItemTagsAdded(aItem, tags) {
+	dump("ON ITEM TAGS ADDED\n");
+	var tagString = tags.join(",");
+	sendNotification(aItem, " tagged with " + tagString);
+}
+function onItemTagRemoved(aItem, tag) {
+	dump("ON ITEM TAGS REMOVED\n");
+	sendNotification(aItem, " untagged with " + tag);
+}
+function onLoveBan(aItem, love, existing) {
+	dump("ON LOVEBAN\n");
+	if (!aItem || existing)
+		return;
+	if (love)
+		sendNotification(aItem, " loved!");
+	else
+		sendNotification(aItem, " banned!");
+}
 
 // API
 // ----------------------------------------------------------------------
@@ -138,6 +173,6 @@ function sendNotification(mediaItem, message) {
   message = "'" + track + "' by '" + artist + "'" + message;
   // XXX TODO probably need to escape this
   // XXX TODO which account?
-  XMPP.send('mattc@skunk.grommit.com',
+  XMPP.send('stevel@skunk.grommit.com',
            <message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);  
 }
