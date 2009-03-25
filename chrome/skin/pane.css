@@ -39,9 +39,8 @@ img {
 
 .notification {
   font-size: 10px;
-  margin-bottom: 5px;
-  padding-top: 3px;
   padding-left: 10px;
+  width: 90%;
 }
 
 .avatar {
@@ -93,7 +92,7 @@ img {
 	clear: both;
 	visibility: hidden;
 	line-height: 0;
-	height: 0;
+	height: 0px;
 }
  
 .clearfix {

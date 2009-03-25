@@ -9,40 +9,57 @@ var channel;
 
 
 /**
+ * Lame abstraction for laconica user data.
+ * TODO should probably clean this up and move it to jsm land?
+ */
+var laconica = {
+  _userData: {},
+
+  callWithUserData: function(userName, func) {
+    if (!(userName in this._userData)) {
+      var controller = this;
+      $.getJSON("http://skunk.grommit.com/api/users/show/" + userName + ".json",
+        function(data){
+          controller._userData[userName] = data;
+          func(data);
+        });
+    }
+    else {
+      func(this._userData[userName]);
+    }
+  }
+}
+
+
+/**
  * Controller for the online friends display area.
  * Tracks who is online, etc.
  */
 var onlineWidget = {
-  _userData: {},
   
   setPresence: function(userName, isOnline) {
-    if (isOnline) {
-      // Make sure the user avatar is visible
-      
-      if (!(userName in this._userData)) {
-        var controller = this;
-        $.getJSON("http://skunk.grommit.com/api/users/show/" + userName + ".json",
-          function(data){
-            controller._userData[userName] = data;
-            controller.setPresence(userName, isOnline);
-          });
-      }
-      else {
-        var data = this._userData[userName];
-        $("<img/>").attr("src", data.profile_image_url)
-                   .attr("username", data.screen_name)
-                   .attr("class", "avatar")
-                   .hide()
-                   .appendTo("#online-container")
-                   .fadeIn("slow");
-      }
+    var controller = this;
+    laconica.callWithUserData(userName, function(data) {
+      controller.setPresenceWithData(data, isOnline);
+    });
+  },
+  
+  setPresenceWithData: function(userData, isOnline) {
+    if (isOnline) {   
+      // Create a new avatar   
+      $("<img/>").attr("src", userData.profile_image_url)
+                 .attr("username", userData.screen_name)
+                 .attr("class", "avatar")
+                 .hide()
+                 .appendTo("#online-container")
+                 .fadeIn("slow");
     }
     else {
       // Hide and kill the avatar
-      
-      $("#online-container img[username=" + userName + "]").fadeOut("slow", function() {
-        $(this).remove();
-      });
+      $("#online-container img[username=" + userData.screen_name + "]")
+        .fadeOut("slow", function() {
+          $(this).remove();
+         });
     }
   },
   
@@ -83,30 +100,69 @@ var onlineWidget = {
 
 
 /**
- * TODO, data should be shared.
+ * Controller for the recent activity display.
+ * Fetches friend timeline on load, and listens
+ * for new notifications via the XMPP channel.
  */
 var activityWidget = {
   
+  _showNotification: function(text, user, shouldAnimate) {
+    // TODO ensure user
+    
+    var node = $("#notification-template > .notification").clone();
+    $("img", node).attr("src", user.profile_image_url); // XXX hack
+    $(".content", node).text(text);
+    if (shouldAnimate) {
+      node.hide();
+    }
+    node.prependTo("#activity-container");
+    if (shouldAnimate) {
+      node.fadeIn("slow");
+    }
+    
+    // TODO should pop oldest notifications after a certain point
+  },
   
   init: function() {
     // TODO error handling
     // TODO XXX set up account properly
+    // Only way to reset this is to clear private data in prefs
     var account = "mattc:XXX@";
+    var controller = this;
+    // Fetch previous activity
     $.getJSON("http://"+ account + "@skunk.grommit.com/api/statuses/friends_timeline.json",
       function(data){
         $("#activity-container").hide();
-        for each (var notification in data) {
-          var node = $("#notification-template > .notification").clone();
-          $("img", node).attr("src", notification.user.profile_image_url);
-          $(".content", node).text(notification.text);
-          node.appendTo("#activity-container")
+        for each (var notification in data.reverse()) {
+          controller._showNotification(notification.text, 
+              notification.user, false);
         }
         $("#activity-container").fadeIn("slow");
       });
+    
+    // Listen for new notifications  
+    // TODO listen only to messages from the murmuration bot?
+    channel.on({
+      event     : 'message',
+      direction : 'in',
+      stanza    : function(s) {
+          return (s.body != undefined ||
+                  s.ns_xhtml_im::html.ns_xhtml::body != undefined);
+      }
+    }, function(m) { 
+      // XXX fix error detection, user lookup
+      var message = m.stanza.body;
+      message = /^(\w+):(.*)$/.exec(message);
+      var userName = message[1];
+      message = message[2];
+      laconica.callWithUserData(userName, function(data) {
+        controller._showNotification(message, data, true);
+      });
+    });
   },
   
   finish: function() {
-    
+    // TODO?
   }
 }
 
@@ -114,6 +170,8 @@ var activityWidget = {
 
 function init() {
   Components.utils.import('resource://xmpp4moz/xmpp.jsm');
+  
+  // TODO handle no account, offline, etc
   channel = XMPP.createChannel();
   onlineWidget.init();
   activityWidget.init();
@@ -121,6 +179,7 @@ function init() {
 
 function finish() {
   onlineWidget.finish();
+  activityWidget.finish();
   channel.release();
 }
 
