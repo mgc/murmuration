@@ -1,4 +1,6 @@
-
+// Your Laconica/ejabberd username
+pref("extensions.murmuration.username", "stevel");
+pref("extensions.murmuration.password", "");
 
 // Used to detect the first time the extension is run 
 pref("extensions.murmuration.firstrun", true);

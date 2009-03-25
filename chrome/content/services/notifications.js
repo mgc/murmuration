@@ -173,6 +173,7 @@ function sendNotification(mediaItem, message) {
   message = "'" + track + "' by '" + artist + "'" + message;
   // XXX TODO probably need to escape this
   // XXX TODO which account?
-  XMPP.send('stevel@skunk.grommit.com',
+  var u = Application.prefs.getValue("extensions.murmuration.username", "");
+  XMPP.send(u + '@skunk.grommit.com',
            <message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);  
 }

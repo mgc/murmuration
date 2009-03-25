@@ -73,7 +73,8 @@ var onlineWidget = {
         }
     });
     for each(var presence in contactPresences) {
-      var userName = XMPP.nickFor('mattc@skunk.grommit.com', presence.stanza.@from)
+      var u = Application.prefs.getValue("extensions.murmuration.username", "");
+      var userName = XMPP.nickFor(u+'@skunk.grommit.com', presence.stanza.@from)
       this.setPresence(userName, true);  
     }
     
@@ -88,7 +89,8 @@ var onlineWidget = {
           return true;
       }
     }, function(presence) {
-      var userName = XMPP.nickFor('mattc@skunk.grommit.com', presence.stanza.@from)
+      var u = Application.prefs.getValue("extensions.murmuration.username", "");
+      var userName = XMPP.nickFor(u+'@skunk.grommit.com', presence.stanza.@from)
       controller.setPresence(userName, presence.stanza.@type != 'unavailable');
     });
   },
@@ -127,7 +129,9 @@ var activityWidget = {
     // TODO error handling
     // TODO XXX set up account properly
     // Only way to reset this is to clear private data in prefs
-    var account = "mattc:XXX@";
+    var u = Application.prefs.getValue("extensions.murmuration.username", "");
+    var p = Application.prefs.getValue("extensions.murmuration.password", "");
+    var account = u + ":" + p;
     var controller = this;
     // Fetch previous activity
     $.getJSON("http://"+ account + "@skunk.grommit.com/api/statuses/friends_timeline.json",

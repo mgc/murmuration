@@ -4,4 +4,4 @@ Requirements:
 * XMPP4MOZ installed
 * An XMPP account configured using sameplace standalone
 * Accounts on skunk.grommit
-* Changing a few hardcoded mattc@skunk.grommit lines
+* Setting your username/password in about:config (extensions.murmuration.*)
