@@ -12,6 +12,9 @@
 var pref = Cc['@mozilla.org/preferences-service;1']
     .getService(Ci.nsIPrefService)
     .getBranch('extensions.murmuration.services.notifications.');
+var extpref = Cc['@mozilla.org/preferences-service;1']
+    .getService(Ci.nsIPrefService)
+    .getBranch('extensions.murmuration.');
 
 Cu.import("resource://app/jsmodules/sbLibraryUtils.jsm");
 Cu.import("resource://app/jsmodules/ArrayConverter.jsm");
@@ -173,7 +176,7 @@ function sendNotification(mediaItem, message) {
   message = "'" + track + "' by '" + artist + "'" + message;
   // XXX TODO probably need to escape this
   // XXX TODO which account?
-  var u = Application.prefs.getValue("extensions.murmuration.username", "");
+  var u = extpref.getCharPref("username");
   XMPP.send(u + '@skunk.grommit.com',
            <message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);  
 }
