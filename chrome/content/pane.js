@@ -50,6 +50,7 @@ var onlineWidget = {
       $("<img/>").attr("src", userData.profile_image_url)
                  .attr("username", userData.screen_name)
                  .attr("class", "avatar")
+                 .attr("alt", userData.screen_name)
                  .hide()
                  .appendTo("#online-container")
                  .fadeIn("slow");
@@ -112,7 +113,8 @@ var activityWidget = {
     // TODO ensure user
     
     var node = $("#notification-template > .notification").clone();
-    $("img", node).attr("src", user.profile_image_url); // XXX hack
+    $("img", node).attr("src", user.profile_image_url)
+                  .attr("alt", user.screen_name); // XXX hack
     $(".content", node).text(text);
     if (shouldAnimate) {
       node.hide();
@@ -128,13 +130,10 @@ var activityWidget = {
   init: function() {
     // TODO error handling
     // TODO XXX set up account properly
-    // Only way to reset this is to clear private data in prefs
     var u = Application.prefs.getValue("extensions.murmuration.username", "");
-    var p = Application.prefs.getValue("extensions.murmuration.password", "");
-    var account = u + ":" + p;
     var controller = this;
     // Fetch previous activity
-    $.getJSON("http://"+ account + "@skunk.grommit.com/api/statuses/friends_timeline.json",
+    $.getJSON("http://skunk.grommit.com/api/statuses/friends_timeline/" + u + ".json",
       function(data){
         $("#activity-container").hide();
         for each (var notification in data.reverse()) {
@@ -171,6 +170,24 @@ var activityWidget = {
 }
 
 
+var loggedOutPane = {
+  init: function() {
+    $("#register-link").click(function() 
+      loadInMediaTab("http://skunk.grommit.com/main/register"));
+    $("#login-link").click(function() 
+      loadInMediaTab("http://skunk.grommit.com/main/login"));
+  },
+}
+
+
+/** Utilities **/
+function loadInMediaTab(url) {
+  top.gBrowser.loadURI(url, 
+    null, null, null, "_media");
+}
+
+
+/** Loading Hooks **/
 
 function init() {
   Components.utils.import('resource://xmpp4moz/xmpp.jsm');
@@ -179,6 +196,7 @@ function init() {
   channel = XMPP.createChannel();
   onlineWidget.init();
   activityWidget.init();
+  loggedOutPane.init();
 }
 
 function finish() {
