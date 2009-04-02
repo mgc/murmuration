@@ -74,8 +74,7 @@ var onlineWidget = {
         }
     });
     for each(var presence in contactPresences) {
-      var u = Application.prefs.getValue("extensions.murmuration.username", "");
-      var userName = XMPP.nickFor(u+'@skunk.grommit.com', presence.stanza.@from)
+      var userName = XMPP.nickFor(murmuration.account.jid, presence.stanza.@from)
       this.setPresence(userName, true);  
     }
     
@@ -90,8 +89,7 @@ var onlineWidget = {
           return true;
       }
     }, function(presence) {
-      var u = Application.prefs.getValue("extensions.murmuration.username", "");
-      var userName = XMPP.nickFor(u+'@skunk.grommit.com', presence.stanza.@from)
+      var userName = XMPP.nickFor(murmuration.account.jid, presence.stanza.@from)
       controller.setPresence(userName, presence.stanza.@type != 'unavailable');
     });
   },
@@ -130,7 +128,11 @@ var activityWidget = {
   init: function() {
     // TODO error handling
     // TODO XXX set up account properly
-    var u = Application.prefs.getValue("extensions.murmuration.username", "");
+    if (!murmuration.account.isConfigured) {
+      throw("No account");
+    }
+    
+    var u = murmuration.account.userName;
     var controller = this;
     // Fetch previous activity
     $.getJSON("http://skunk.grommit.com/api/statuses/friends_timeline/" + u + ".json",
@@ -191,8 +193,6 @@ var windowController = {
     Components.utils.import('resource://murmuration/main.jsm');
 
     channel = XMPP.createChannel();
-    onlineWidget.init();
-    activityWidget.init();
     loggedOutPane.init();
 
     // TODO handle no account, offline, etc    
@@ -209,8 +209,10 @@ var windowController = {
   
   onAccountChange: function() {
     if (murmuration.account.isConfigured) {
-      $('#logged-in-pane').show();
-      $('#logged-out-pane').hide;      
+      $('#logged-out-pane').hide();
+      $('#logged-in-pane').show("fast");
+      onlineWidget.init();
+      activityWidget.init();
     } else {
       $('#logged-in-pane').hide();
       $('#logged-out-pane').fadeIn("slow");

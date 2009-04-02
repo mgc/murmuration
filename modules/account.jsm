@@ -8,7 +8,6 @@
 
 var EXPORTED_SYMBOLS = ['account'];
 
-
 // DEFINITIONS
 // ----------------------------------------------------------------------
 
@@ -22,6 +21,10 @@ var prefServices = Cc['@mozilla.org/preferences-service;1']
     .getBranch('extensions.murmuration.');
 
 Cu.import('resource://xmpp4moz/xmpp.jsm');
+
+const SERVER = "skunk.grommit.com";
+const RESOURCE = "SongbirdMurmuration"
+const PORT = 5222;
 
 var account = {
 
@@ -53,6 +56,17 @@ var account = {
 
   // METHODS
   // ----------------------------------------------------------------------
+  
+  get jid() {
+    var address = this.address;
+    return (address) ? address + "/" + RESOURCE : null;
+  },
+  
+  get address() {
+    var user = this.userName;
+    return (user) ? user + "@" + SERVER : null;
+  },
+  
   get userName() {
     return prefServices.getCharPref("username");
   },
@@ -106,11 +120,51 @@ var account = {
     if (topic == "cookie-changed" && (data == "added" || data == "changed")) {
       var cookie = subject.QueryInterface(Components.interfaces.nsICookie);
       if (cookie.host == ".skunk.grommit.com" && cookie.name == "murmurationaccount") {
+
+        if (this.jid && XMPP.isUp(this.jid)) {
+          XMPP.down(this.jid);
+        }
+        
         var parts = /^account=(.*);pass=(.*)$/.exec(unescape(cookie.value));
         this.userName = parts[1];
         this.password = parts[2];
+        
+        if (this.isConfigured) {
+          var account = {
+            jid: this.jid,
+            resource: RESOURCE,
+            address: this.address,
+            password: this.password,
+            connectionPort: PORT,
+            connectionSecurity: 0,
+            connectionHost: SERVER,
+          };
+          
+          
+          // Hack: force this account into the XMPP settings
+          var pref = Cc['@mozilla.org/preferences-service;1']
+              .getService(Ci.nsIPrefService)
+              .getBranch('xmpp.account.');
+          var key = (new Date()).getTime();
+          pref.setCharPref(key + '.address', account.address);
+          pref.setCharPref(key + '.resource', account.resource);
+          if(account.password)
+            XMPP.setPassword(account.address, account.password);
+          pref.setCharPref(key + '.connectionHost', account.connectionHost);
+          //pref.setCharPref(key + '.presenceHistory', '[]');
+          pref.setIntPref(key + '.connectionPort', account.connectionPort);
+          pref.setIntPref(key + '.connectionSecurity', account.connectionSecurity);
+          
+          dump("Connecting account " + uneval(account) + "\n\n");
+
+          // TODO Error handling, etc.
+          // XXX Assumes only one account.
+          XMPP.up(XMPP.accounts.get(0));
+        }
+        
         this.notifyListeners();
       }
     }
   }
 }
+
