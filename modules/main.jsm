@@ -5,7 +5,7 @@
 // EXPORTS
 // ----------------------------------------------------------------------
 
-var EXPORTED_SYMBOLS = ['Murmuration'];
+var EXPORTED_SYMBOLS = ['murmuration'];
 
 
 // DEFINITIONS
@@ -28,6 +28,8 @@ Cu.import('resource://xmpp4moz/json.jsm');
 Cu.import('resource://xmpp4moz/namespaces.jsm');
 Cu.import('resource://xmpp4moz/log.jsm');
 
+Cu.import('resource://murmuration/account.jsm');
+
 
 // STATE
 // ----------------------------------------------------------------------
@@ -42,6 +44,8 @@ var observer;
 function init() {
   channel = XMPP.createChannel();
 
+  account.init();
+
   loadServices();
   restoreOnlineState();
 
@@ -52,8 +56,7 @@ function init() {
       false);
 }
 
-function finish() {
-
+function finish() {  
   srvObserver.removeObserver(observer, 'quit-application');
   delete observer;
 
@@ -68,6 +71,9 @@ function finish() {
       }
     }
   }
+  
+  account.finish();
+  
   channel.release();
 }
 
@@ -114,8 +120,9 @@ function restoreOnlineState() {
 // KICKSTART
 // ----------------------------------------------------------------------
 
-var Murmuration = {
-    services: services
+var murmuration = {
+    services: services,
+    account: account
 };
 
 init();

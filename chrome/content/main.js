@@ -26,14 +26,7 @@ Murmuration.Controller = {
       Application.prefs.setValue("extensions.murmuration.firstrun", false);
       this._firstRunSetup();
     }
-    
-    // XXX Megahack TODO.  To get things up and running the server
-    // passes the account info via a cookie.  This is an extremely
-    // bad idea.  Make sure this is fixed before any public release.
-    var observerService = Components.classes["@mozilla.org/observer-service;1"]
-                                    .getService(Components.interfaces.nsIObserverService);
-    observerService.addObserver(this, "cookie-changed", false);    
-    
+
     // XXX TODO MOVE
     Components.utils.import('resource://murmuration/main.jsm');
   },
@@ -43,25 +36,6 @@ Murmuration.Controller = {
    */
   onUnLoad: function() {
     this._initialized = false;
-    var observerService = Components.classes["@mozilla.org/observer-service;1"]
-                                    .getService(Components.interfaces.nsIObserverService);
-    observerService.removeObserver(this, "cookie-changed");
-  },
-  
-  /**
-   * Trap a murmuration account cookie being set.
-   * This is a bad idea, but there is no other security in 
-   * this prototype, so it doesn't much matter.
-   */
-  observe: function(subject, topic, data) {
-    if (topic == "cookie-changed" && (data == "added" || data == "changed")) {
-      var cookie = subject.QueryInterface(Components.interfaces.nsICookie);
-      if (cookie.host == ".skunk.grommit.com" && cookie.name == "murmurationaccount") {
-        var parts = /^account=(.*);pass=(.*)$/.exec(unescape(cookie.value));
-        var account = parts[1];
-        var password = parts[2];
-      }
-    }
   },
   
   /**

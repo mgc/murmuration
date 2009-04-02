@@ -171,12 +171,51 @@ var activityWidget = {
 
 
 var loggedOutPane = {
+  
   init: function() {
     $("#register-link").click(function() 
       loadInMediaTab("http://skunk.grommit.com/main/register"));
     $("#login-link").click(function() 
       loadInMediaTab("http://skunk.grommit.com/main/login"));
   },
+}
+
+
+/**
+ * Root controller for the entire window. Sets everything up.
+ */
+var windowController = {
+  
+  init: function() {
+    Components.utils.import('resource://xmpp4moz/xmpp.jsm');
+    Components.utils.import('resource://murmuration/main.jsm');
+
+    channel = XMPP.createChannel();
+    onlineWidget.init();
+    activityWidget.init();
+    loggedOutPane.init();
+
+    // TODO handle no account, offline, etc    
+    windowController.onAccountChange();    
+    murmuration.account.addListener(windowController);
+  },
+  
+  finish: function() {
+    murmuration.account.removeListener(windowController);
+    onlineWidget.finish();
+    activityWidget.finish();
+    channel.release();
+  },
+  
+  onAccountChange: function() {
+    if (murmuration.account.isConfigured) {
+      $('#logged-in-pane').show();
+      $('#logged-out-pane').hide;      
+    } else {
+      $('#logged-in-pane').hide();
+      $('#logged-out-pane').fadeIn("slow");
+    }
+  }
 }
 
 
@@ -188,23 +227,6 @@ function loadInMediaTab(url) {
 
 
 /** Loading Hooks **/
-
-function init() {
-  Components.utils.import('resource://xmpp4moz/xmpp.jsm');
-  
-  // TODO handle no account, offline, etc
-  channel = XMPP.createChannel();
-  onlineWidget.init();
-  activityWidget.init();
-  loggedOutPane.init();
-}
-
-function finish() {
-  onlineWidget.finish();
-  activityWidget.finish();
-  channel.release();
-}
-
-window.addEventListener("load", init, false);
-window.addEventListener("unload", finish, false);
+window.addEventListener("load", windowController.init, false);
+window.addEventListener("unload", windowController.finish, false);
 
