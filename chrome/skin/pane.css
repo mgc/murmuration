@@ -62,11 +62,17 @@ h1 {
   font-size: 10px;
   padding-left: 10px;
   width: 90%;
+  cursor: pointer;
+}
+
+.notification:hover {
+  text-decoration:underline;
 }
 
 .avatar {
   margin-right: 4px;
   float: left;
+  cursor: pointer;
 }
 
 .avatar:hover {

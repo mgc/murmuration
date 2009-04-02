@@ -51,6 +51,9 @@ var onlineWidget = {
                  .attr("username", userData.screen_name)
                  .attr("class", "avatar")
                  .attr("alt", userData.screen_name)
+                 .click(function() 
+                   loadInMediaTab("http://skunk.grommit.com/" +
+                                  userData.screen_name))
                  .hide()
                  .appendTo("#online-container")
                  .fadeIn("slow");
@@ -111,6 +114,9 @@ var activityWidget = {
     // TODO ensure user
     
     var node = $("#notification-template > .notification").clone();
+    node.click(function() 
+                loadInMediaTab("http://skunk.grommit.com/" +
+                     user.screen_name));
     $("img", node).attr("src", user.profile_image_url)
                   .attr("alt", user.screen_name); // XXX hack
     $(".content", node).text(text);
@@ -194,6 +200,9 @@ var windowController = {
 
     channel = XMPP.createChannel();
     loggedOutPane.init();
+
+    $("#viewall-link").click(function() 
+        loadInMediaTab("http://skunk.grommit.com/"));
 
     // TODO handle no account, offline, etc    
     windowController.onAccountChange();    
