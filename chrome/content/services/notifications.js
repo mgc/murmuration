@@ -58,6 +58,12 @@ function init() {
 	  this.lfm.listeners.add(this);
   }
 
+  // Add ourselves as a playlist history listener
+  var playbackHistory =
+  	      Cc['@songbirdnest.com/Songbird/PlaybackHistoryService;1']
+  	      .getService(Ci.sbIPlaybackHistoryService);
+  playbackHistory.addListener(this);
+
   // TODO fill the rest in...
   dump("\nnotification init complete\n");
 }
@@ -71,6 +77,11 @@ function finish() {
     delete alertsService;
     LibraryUtils.mainLibrary.removeListener(this);
 	this.lfm.listeners.remove(this);
+	
+  var playbackHistory =
+  	      Cc['@songbirdnest.com/Songbird/PlaybackHistoryService;1']
+  	      .getService(Ci.sbIPlaybackHistoryService);
+  playbackHistory.removeListener(this);
 }
 
 
@@ -110,8 +121,22 @@ function onItemUpdated(aMediaList, aMediaItem, aProperties) {
   if (batchCount == 0) {
     for (var prop in ArrayConverter.JSEnum(aProperties)) {
       if (prop.QueryInterface(Ci.sbIProperty).id == SBProperties.rating) {
-        var rating = aMediaItem.getProperty(SBProperties.rating);
-        sendNotification(aMediaItem, " rated " + rating);
+
+
+        var rating = parseInt(aMediaItem.getProperty(SBProperties.rating));
+        var ratingText = rating;
+        
+/* Booo, doesn't work
+        ratingText = "";
+        for (var i = 1; i < 5; i++) {
+          if (i <= rating) {
+            ratingText += "&#9733;";
+          } else {
+            ratingText += "&#9734;";
+          }
+        }
+*/        
+        sendNotification(aMediaItem, " #rated " + ratingText);
         break;
       }
     }
@@ -134,6 +159,7 @@ function onBatchEnd(aMediaList) {
 }
 
 // sbILastFm Listener
+// ----------------------------------------------------------------------
 function onShouldScrobbleChanged() { return true; }
 function onUserLoggedOutChanged() { return true; }
 function onErrorChanged() { return true; }
@@ -147,21 +173,31 @@ function onAuthorisationSuccess() { return true; }
 function onItemTagsAdded(aItem, tags) {
 	dump("ON ITEM TAGS ADDED\n");
 	var tagString = tags.join(",");
-	sendNotification(aItem, " tagged with " + tagString);
+	sendNotification(aItem, " #tagged with " + tagString);
 }
 function onItemTagRemoved(aItem, tag) {
 	dump("ON ITEM TAGS REMOVED\n");
-	sendNotification(aItem, " untagged with " + tag);
+	sendNotification(aItem, " #untagged with " + tag);
 }
 function onLoveBan(aItem, love, existing) {
 	dump("ON LOVEBAN\n");
 	if (!aItem || existing)
 		return;
 	if (love)
-		sendNotification(aItem, " loved!");
+		sendNotification(aItem, " #loved!");
 	else
-		sendNotification(aItem, " banned!");
+		sendNotification(aItem, " #banned!");
 }
+
+// sbIPlaybackHistoryListener
+// ----------------------------------------------------------------------
+function onEntriesAdded(aEntries) {
+  for (var entry in ArrayConverter.JSEnum(aEntries)) {
+    entry = entry.QueryInterface(Ci.sbIPlaybackHistoryEntry);
+    sendNotification(entry.item, " #played");
+  }
+}
+
 
 // API
 // ----------------------------------------------------------------------
@@ -176,6 +212,6 @@ function sendNotification(mediaItem, message) {
   var track = mediaItem.getProperty(SBProperties.trackName);
   message = "'" + track + "' by '" + artist + "'" + message;
   // XXX TODO probably need to escape this
-  XMPP.send(murmuration.account.jid,
+  XMPP.send(murmuration.account.address,
            <message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);  
 }
