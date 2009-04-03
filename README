@@ -1,7 +1,19 @@
-Super crappy first commit so that SteveL can get started. 
+Murmuration is a prototype add-on for the Songbird media player.
+In conjunction with a server project on http://skunk.grommit.com
+Murmuration shares everything you do in Songbird
+with your subscribers.  
+
+The idea is to passively monitor what you friends are doing, and
+sample music directly from their libraries.
+
+For more information see 
+http://wiki.songbirdnest.com/Developer/Articles/Project_Ideas/Social_Streaming
 
 Requirements:
-* XMPP4MOZ installed
-* An XMPP account configured using sameplace standalone
-* Accounts on skunk.grommit
-* Setting your username/password in about:config (extensions.murmuration.*)
+* XMPP4MOZ must be installed (see http://github.com/bard/xmpp4moz/)
+
+TODO:
+* Firewall UDP hole punching with PJNATH.
+* UDP audio streaming with sbIGStreamerUDPStreamer.
+* Jingle style stream initiation and control.
+* Completely rewrite everything to suck less, include error handling.

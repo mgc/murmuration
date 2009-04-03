@@ -1,7 +1,30 @@
-// XXX TODO license.
+/*
+ * Copyright 2009 by POTI Inc.
+ *
+ * This file is part of Murmuration.
+ *
+ * Murmuration is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Murmuration is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-// Account Manager.  
-// TODO Rewrite
+// Account Manager.  Responsible for maintaining the current
+// account, and syncronizing with the web site.  
+
+// TODO: Needs to be completely rewritten in a less braindead way.
+// TODO: JSMs loaded by JSMs is a bad idea, since error messages 
+// get lost somehow. When rewriting this, think about using
+// the jsloader like SamePlace.
+
 
 // EXPORTS
 // ----------------------------------------------------------------------
