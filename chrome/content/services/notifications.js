@@ -32,6 +32,7 @@ var batchCount = 0;
 // ----------------------------------------------------------------------
 
 function init() {
+  // XXX This throws an exception when growl isn't installed?
   alertService = Cc["@mozilla.org/alerts-service;1"]
                     .getService(Ci.nsIAlertsService);
 
