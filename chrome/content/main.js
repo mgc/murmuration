@@ -60,10 +60,6 @@ Murmuration.Controller = {
    * Perform extra setup the first time the extension is run
    */
   _firstRunSetup : function() {
-  
-    // Call this.doHelloWorld() after a 3 second timeout
-    setTimeout(function(controller) { controller.doHelloWorld(); }, 3000, this); 
-  
   }
 };
 
