@@ -79,10 +79,10 @@ function finish() {
     LibraryUtils.mainLibrary.removeListener(this);
 	this.lfm.listeners.remove(this);
 	
-  var playbackHistory =
+	var playbackHistory =
   	      Cc['@songbirdnest.com/Songbird/PlaybackHistoryService;1']
   	      .getService(Ci.sbIPlaybackHistoryService);
-  playbackHistory.removeListener(this);
+	playbackHistory.removeListener(this);
 }
 
 
@@ -172,16 +172,13 @@ function onLoginSucceeded() { return true; }
 function onProfileUpdated() { return true; }
 function onAuthorisationSuccess() { return true; }
 function onItemTagsAdded(aItem, tags) {
-	dump("ON ITEM TAGS ADDED\n");
 	var tagString = tags.join(",");
 	sendNotification(aItem, " #tagged with " + tagString);
 }
 function onItemTagRemoved(aItem, tag) {
-	dump("ON ITEM TAGS REMOVED\n");
 	sendNotification(aItem, " #untagged with " + tag);
 }
 function onLoveBan(aItem, love, existing) {
-	dump("ON LOVEBAN\n");
 	if (!aItem || existing)
 		return;
 	if (love)
