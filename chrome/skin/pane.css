@@ -25,7 +25,8 @@ body {
   background-image: url('/skin/pane-top.png');
   background-position: top left;
   background-repeat: repeat-x;
-  overflow: -moz-scrollbars-none;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 h1 {
