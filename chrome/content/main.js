@@ -46,7 +46,7 @@ Murmuration.Controller = {
     }
 
     // XXX TODO MOVE
-    Components.utils.import('resource://murmuration/main.jsm');
+    //Components.utils.import('resource://murmuration/main.jsm');
   },
   
   /**
