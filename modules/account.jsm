@@ -153,6 +153,29 @@ var account = {
         this.password = parts[2];
         
         if (this.isConfigured) {
+          // Hack: force this account into the XMPP settings
+          var pref = Cc['@mozilla.org/preferences-service;1']
+              .getService(Ci.nsIPrefService)
+              .getBranch('xmpp.account.');
+
+          // Check to see if we already have an account registered so we
+          // don't create multiple xmpp accounts for the same account
+		  var existing = false;
+		  var self = this;
+		  XMPP.accounts.forEach(function(a) {
+            var aJid = pref.getCharPref(a.key + '.address') + "/" +
+				pref.getCharPref(a.key + '.resource');
+			dump("checking " + aJid + " against" + self.jid + "\n");
+			if (aJid == self.jid) {
+			  existing = true;
+			}
+		  });
+		  if (existing) {
+            dump("ACCOUNT ALREADY EXISTS\n");
+		    return;
+		  }
+          dump("Connecting account " + uneval(account) + "\n\n");
+
           var account = {
             jid: this.jid,
             resource: RESOURCE,
@@ -163,11 +186,6 @@ var account = {
             connectionHost: SERVER,
           };
           
-          
-          // Hack: force this account into the XMPP settings
-          var pref = Cc['@mozilla.org/preferences-service;1']
-              .getService(Ci.nsIPrefService)
-              .getBranch('xmpp.account.');
           var key = (new Date()).getTime();
           pref.setCharPref(key + '.address', account.address);
           pref.setCharPref(key + '.resource', account.resource);
@@ -178,8 +196,6 @@ var account = {
           pref.setIntPref(key + '.connectionPort', account.connectionPort);
           pref.setIntPref(key + '.connectionSecurity', account.connectionSecurity);
           
-          dump("Connecting account " + uneval(account) + "\n\n");
-
           // TODO Error handling, etc.
           // XXX Assumes only one account.
           XMPP.up(XMPP.accounts.get(0));
