@@ -121,6 +121,7 @@ var onlineWidget = {
 }
 
 
+var MRMR_NS = "http://skunk.grommit.com/data/1.0#murmuration";
 /**
  * Controller for the recent activity display.
  * Fetches friend timeline on load, and listens
@@ -128,16 +129,28 @@ var onlineWidget = {
  */
 var activityWidget = {
   
-  _showNotification: function(text, user, shouldAnimate) {
+  _showNotification: function(text, user, shouldAnimate, noticeId) {
     // TODO ensure user
     
     var node = $("#notification-template > .notification").clone();
-    node.click(function() 
-                loadInMediaTab("http://skunk.grommit.com/" +
-                     user.screen_name));
-    $("img", node).attr("src", user.profile_image_url)
+	node.noticeId = noticeId;
+    node.click(function() {
+		loadInMediaTab("http://skunk.grommit.com/" + user.screen_name);
+	});
+    $(".avatar img", node).attr("src", user.profile_image_url)
                   .attr("alt", user.screen_name); // XXX hack
     $(".content", node).text(text);
+	$(".reply-icon", node).click(function(ev) {
+		var panel =
+			window.top.document.getElementById("murmuration-comment-panel");
+		panel.openPopup(ev.target);
+		var commentBox = window.top.document.getElementById("new-comment");
+		commentBox.setAttributeNS(MRMR_NS, "user", user.screen_name);
+		commentBox.setAttributeNS(MRMR_NS, "noticeId", noticeId);
+		commentBox.value = "";
+		ev.stopPropagation();
+		ev.preventDefault();
+	});
     if (shouldAnimate) {
       node.hide();
     }
@@ -164,7 +177,7 @@ var activityWidget = {
         $("#activity-container").hide();
         for each (var notification in data.reverse()) {
           controller._showNotification(notification.text, 
-              notification.user, false);
+              notification.user, false, notification.id);
         }
         $("#activity-container").fadeIn("slow");
       });
@@ -184,8 +197,11 @@ var activityWidget = {
       message = /^(\w+):(.*)$/.exec(message);
       var userName = message[1];
       message = message[2];
+	  message = /^(.*)\s*\#id(\d+)$/.exec(message);
+	  noticeId = message[2];
+	  message = message[1];
       laconica.callWithUserData(userName, function(data) {
-        controller._showNotification(message, data, true);
+        controller._showNotification(message, data, true, noticeId);
       });
     });
   },

@@ -1,0 +1,22 @@
+/* TAG PANEL */
+panel#murmuration-comment-panel {
+    -moz-border-radius: 5px;
+    opacity: 0.8;
+}
+
+#murmuration-comment-panel #background {
+    -moz-border-radius: 5px;
+    background-color: black;
+    opacity: 1.0;
+    width: 100%;
+}
+
+#murmuration-comment-panel #comment-vbox {
+    padding: 4px;
+    opacity: 1.0;
+}
+
+#murmuration-comment-panel label {
+    color: #eee;
+}
+

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://murmuration/skin/browser.css" ?>
 <overlay id="murmuration-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script src="main.js"/>
@@ -6,5 +7,19 @@
   <stringbundleset id="stringbundleset"> 
      <stringbundle id="murmuration-strings" src="chrome://murmuration/locale/overlay.properties"/>
   </stringbundleset>  
+
+  <popupset id="mainPopupSet">
+	<panel id="murmuration-comment-panel" position="before_end">
+		<stack>
+			<vbox id="background" flex="1" />
+			<vbox id="comment-vbox">
+				<label value="Snark away!" />
+				<textbox id="new-comment" type="search" searchbutton="true"
+					onkeypress="if (event.keyCode == 13) Murmuration.addComment(event)"
+					/>
+			</vbox>
+		</stack>
+	</panel>
+  </popupset>
 
 </overlay>
