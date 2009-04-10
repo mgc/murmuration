@@ -125,6 +125,12 @@ img.reply-icon {
 .notification:hover .controls {
   visibility: visible;
 }
+
+.reply {
+	padding-left: 30px !important;
+	width: 78%;
+}
+
 /** FOOTER **/
 
 #footer-container {

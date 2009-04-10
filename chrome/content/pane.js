@@ -132,8 +132,20 @@ var activityWidget = {
   _showNotification: function(text, user, shouldAnimate, noticeId) {
     // TODO ensure user
     
+	var replyMessage = /(.*)\s*#rid(\d+)(.*)/.exec(text);
+	var inReplyToNode;
+	if (replyMessage) {
+		var replyNoticeId = replyMessage[2];
+		text = replyMessage[1];
+		$(".notification").each(function(i) {
+			if (this.getAttributeNS(MRMR_NS, "noticeId") == replyNoticeId) {
+				inReplyToNode = this;
+			}
+		});
+	}
+
     var node = $("#notification-template > .notification").clone();
-	node.noticeId = noticeId;
+	node.get(0).setAttributeNS(MRMR_NS, "noticeId", noticeId);
     node.click(function() {
 		loadInMediaTab("http://skunk.grommit.com/" + user.screen_name);
 	});
@@ -154,7 +166,12 @@ var activityWidget = {
     if (shouldAnimate) {
       node.hide();
     }
-    node.prependTo("#activity-container");
+	if (inReplyToNode) {
+		node.addClass("reply");
+		$(inReplyToNode).after(node);
+	} else {
+		node.prependTo("#activity-container");
+	}
     if (shouldAnimate) {
       node.fadeIn("slow");
     }
