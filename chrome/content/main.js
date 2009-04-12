@@ -39,6 +39,7 @@ Murmuration.addComment = function(event) {
 	dump(message + "\n");
 	XMPP.send(murmuration.account.address,
 		<message to="murmuration@skunk.grommit.com"><body>{message}</body></message>); 
+	document.getElementById("murmuration-comment-panel").hidePopup();
 }
 
 /**
