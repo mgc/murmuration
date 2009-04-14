@@ -104,9 +104,6 @@ h1 {
   padding-left: 3px;
   padding-right: 3px;
 }
-.notification:hover .content {
-  margin-right: 14px;
-}
 
 .controls {
   float: right;
@@ -123,6 +120,7 @@ img.reply-icon {
 }
 
 .notification:hover .controls {
+  margin-left: 14px;
   visibility: visible;
 }
 
