@@ -138,13 +138,17 @@ var activityWidget = {
 		var replyNoticeId = replyMessage[2];
 		text = replyMessage[1];
 		$(".notification").each(function(i) {
-			if (this.getAttributeNS(MRMR_NS, "noticeId") == replyNoticeId) {
+			if ((this.getAttributeNS(MRMR_NS, "noticeId") == replyNoticeId) ||
+				(this.getAttributeNS(MRMR_NS, "origRNID") == replyNoticeId)) {
 				inReplyToNode = this;
 			}
 		});
 	}
 
-    var node = $("#notification-template > .notification").clone();
+	if (inReplyToNode)
+		var node = $("#reply-notification-template > .notification").clone();
+	else
+		var node = $("#notification-template > .notification").clone();
 	node.get(0).setAttributeNS(MRMR_NS, "noticeId", noticeId);
     node.click(function() {
 		loadInMediaTab("http://skunk.grommit.com/" + user.screen_name);
@@ -168,6 +172,7 @@ var activityWidget = {
     }
 	if (inReplyToNode) {
 		node.addClass("reply");
+		node.get(0).setAttributeNS(MRMR_NS, "origRNID", replyNoticeId);
 		$(inReplyToNode).after(node);
 	} else {
 		node.prependTo("#activity-container");
