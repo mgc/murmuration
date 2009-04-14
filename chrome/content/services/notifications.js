@@ -90,10 +90,11 @@ function finish() {
 // ----------------------------------------------------------------------
 
 function receiveNotification(m) {
-  alertService.showAlertNotification(
-    "",
-    "Notification",
-    m.stanza.body
+	var txt = m.stanza.body.toString().replace(/#r?id\d+/g, "");
+	alertService.showAlertNotification(
+		"",
+		"Notification",
+		txt
     /*
       in AString imageUrl, 
       in AString title, 
