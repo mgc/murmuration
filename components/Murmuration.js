@@ -40,9 +40,13 @@ function Murmuration()
   var obs = Cc["@mozilla.org/observer-service;1"]
               .getService(Ci.nsIObserverService);
   obs.addObserver(this, "playlist-commands-ready", false);
+
+  this.wrappedJSObject = this;
 }
 
 Murmuration.prototype.constructor = Murmuration;
+
+var listeners = [];
 
 Murmuration.prototype = {
 	classDescription: "Playlist Commands Example",
@@ -51,16 +55,15 @@ Murmuration.prototype = {
 
 	m_Library : null,
 	m_Commands : null,
-	m_Listeners : [],
   
 	addListener: function(listener) {
-		this.m_Listeners.push(listener);
+		listeners.push(listener);
 	},
 	removeListener: function(listener) {
 		for (;;) {
-			let l = this.m_Listeners.indexOf(listener);
+			let l = listeners.indexOf(listener);
 			if (l >= 0)
-				this.m_Listeners.splice(i, 1);
+				listeners.splice(i, 1);
 			else
 				return;
 		}
@@ -150,10 +153,19 @@ Murmuration.prototype = {
 
 	plCmd_MurmurTrack: function(aContext, aSubMenuId, aCommandId, aHost) {
 		var selection = unwrap(aContext.playlist).mediaListView.selection;
-		var items = selection.selectedMediaItems
+		var items = selection.selectedMediaItems;
 		while (items.hasMoreElements()) {
 			var item = items.getNext();
 			dump("Triggering upload of: " + item.getProperty(SBProperties.contentURL) + " -- " + item.getProperty(SBProperties.contentLength) + "\n");
+			for (var i=0; i<listeners.length; i++) {
+				// Trigger listeners
+				var exists = listeners[i].onBeforeTrackMurmured(item.guid);
+				if (exists) {
+					dump("Track has already been murmured\n");
+					//listeners[i].onTrackMurmured(item.guid, null);
+					break;
+				}
+			}
 
 			// Get an nsIFile for the track
 			var uri =
@@ -188,9 +200,10 @@ Murmuration.prototype = {
 					return;
 				if (this.status == 200) {
 					dump("Response:" + this.responseText + "\n");
-					for (var i=0; i<this.m_Listeners.length; i++) {
+					for (var i=0; i<listeners.length; i++) {
 						// Trigger listeners
-						this.m_Listeners[i].onTrackMurmured(this.responseText);
+						listeners[i].onTrackMurmured(item.guid,
+								this.responseText);
 					}
 				}
 			};

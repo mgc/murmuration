@@ -16,7 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
+if (typeof(Cu) == "undefined")
+	const Cu = Components.utils;
+if (typeof(Cc) == "undefined")
+	const Cc = Components.classes;
+if (typeof(Ci) == "undefined")
+	const Ci = Components.interfaces;
+
 
 // ADDITIONAL TODOS
 // * Handle losing the connection
@@ -267,9 +274,17 @@ var windowController = {
     // TODO handle no account, offline, etc    
     windowController.onAccountChange();    
     murmuration.account.addListener(windowController);
+		
+	// Add Murmuration listeners
+	var mrmr = Cc["@songbirdnest.com/Songbird/Murmuration;1"]
+		.getService(Ci.nsIObserver).wrappedJSObject;
+	mrmr.addListener(Murmur);
   },
   
   finish: function() {
+	var mrmr = Cc["@songbirdnest.com/Songbird/Murmuration;1"]
+		.getService(Ci.nsIObserver).wrappedJSObject;
+	mrmr.removeListener(Murmur);
     murmuration.account.removeListener(windowController);
     onlineWidget.finish();
     activityWidget.finish();
@@ -294,6 +309,76 @@ var windowController = {
 function loadInMediaTab(url) {
   top.gBrowser.loadURI(url, 
     null, null, null, "_media");
+}
+
+var Murmur = {
+	murmuredTracks: null,
+
+	onBeforeTrackMurmured: function(guid) {
+		if (Murmur.murmuredTracks == null)
+			Murmur.murmuredTracks = new Array();
+
+		var panel = window.top.document
+			.getElementById("murmuration-share-panel");
+		var vbox = window.top.document
+			.getElementById("murmur-vbox");
+		while (vbox.firstChild)
+			vbox.removeChild(vbox.firstChild);
+		
+		// Load current online friends
+		var contactPresences = XMPP.cache.fetch({
+			event     : 'presence',
+			direction : 'in',
+			stanza    : function(s) {
+			  return s.@type == undefined;
+			}
+		});
+		for each(var presence in contactPresences) {
+			var userName =
+				XMPP.nickFor(murmuration.account.jid, presence.stanza.@from)
+			var doc = window.top.document;
+			laconica.callWithUserData(userName, function(user) {
+				var userDiv = doc.createElement("div");
+				userDiv.className = "user";
+				var img = doc.createElement("image");
+				img.className = "user-avatar";
+				img.setAttribute("src", user.profile_image_url);
+				img.setAttributeNS(MRMR_NS, "username", user.screen_name);
+				var name = doc.createElement("label");
+				name.className = "user-name";
+				name.setAttribute("value", user.screen_name);
+
+				img.addEventListener("click", function() {
+					var username = this.getAttributeNS(MRMR_NS, "username");
+					dump("sharing with: " + username + "\n");
+				}, false);
+
+				userDiv.appendChild(img);
+				userDiv.appendChild(name);
+				vbox.appendChild(userDiv);
+			});
+		}
+		
+		dump("opening popup\n");
+		var x = window.top.screenX + (window.top.innerWidth/2);
+		var y = window.top.screenY + (window.top.innerHeight/2);
+		panel.openPopupAtScreen(x, y);
+		if ((typeof(Murmur.murmuredTracks[guid]) != "undefined") &&
+			(typeof(Murmur.murmuredTracks[guid].shareWith) != "undefined"))
+		{
+			return true;
+		} else {
+			return false;
+		}
+	},
+
+	onTrackMurmured: function(guid, url) {
+		if (typeof(Murmur.murmuredTracks[guid]) == "undefined")
+			Murmur.murmuredTracks[guid] = new Object();
+		Murmur.murmuredTracks[guid].url = url;
+		if (typeof(Murmur.murmuredTracks[guid].shareWith) != "undefined")
+			Murmur.shareTracks(Murmur.murmuredTracks[guid]);
+	}
 }
 
 
