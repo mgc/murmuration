@@ -28,6 +28,8 @@ var channel;
 var alertService;
 var batchCount = 0;
 
+var notificationFloodCounter = 0;
+var notificationFloodTimestamp;
 // INITIALIZATION
 // ----------------------------------------------------------------------
 
@@ -91,6 +93,21 @@ function finish() {
 // ----------------------------------------------------------------------
 
 function receiveNotification(m) {
+	var now = Date.now()/1000;
+	if (notificationFloodTimestamp == now) {
+		// if this notification is at the same time, then increment the counter
+		if (notificationFloodCounter++ == 10) {
+			alertService.showAlertNotification("", "Notification",
+				"Skipping mass notification flood...");
+			return;
+		} else if (notificationFloodCounter > 10)
+			return;
+	} else {
+		// otherwise reset the timer
+		notificationFloodCounter = 0;
+		notificationFloodTimestamp = now;
+	}
+
 	var txt = m.stanza.body.toString().replace(/#r?id\d+/g, "");
 	alertService.showAlertNotification(
 		"",
