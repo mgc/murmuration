@@ -63,7 +63,7 @@ Murmuration.prototype = {
 		for (;;) {
 			let l = listeners.indexOf(listener);
 			if (l >= 0)
-				listeners.splice(i, 1);
+				listeners.splice(l, 1);
 			else
 				return;
 		}
@@ -157,15 +157,16 @@ Murmuration.prototype = {
 		while (items.hasMoreElements()) {
 			var item = items.getNext();
 			dump("Triggering upload of: " + item.getProperty(SBProperties.contentURL) + " -- " + item.getProperty(SBProperties.contentLength) + "\n");
+			var exists = false;
 			for (var i=0; i<listeners.length; i++) {
 				// Trigger listeners
-				var exists = listeners[i].onBeforeTrackMurmured(item.guid);
-				if (exists) {
+				if (listeners[i].onBeforeTrackMurmured(item)) {
 					dump("Track has already been murmured\n");
-					//listeners[i].onTrackMurmured(item.guid, null);
-					break;
+					exists = true;
 				}
 			}
+			if (exists)
+				break;
 
 			// Get an nsIFile for the track
 			var uri =
@@ -202,7 +203,7 @@ Murmuration.prototype = {
 					dump("Response:" + this.responseText + "\n");
 					for (var i=0; i<listeners.length; i++) {
 						// Trigger listeners
-						listeners[i].onTrackMurmured(item.guid,
+						listeners[i].onTrackMurmured(item,
 								this.responseText);
 					}
 				}

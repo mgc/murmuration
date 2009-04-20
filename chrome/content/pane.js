@@ -24,6 +24,11 @@ if (typeof(Cc) == "undefined")
 if (typeof(Ci) == "undefined")
 	const Ci = Components.interfaces;
 
+if (typeof(gMM) == "undefined")
+	var gMM = Cc["@songbirdnest.com/Songbird/Mediacore/Manager;1"]
+		.getService(Ci.sbIMediacoreManager);
+
+Cu.import("resource://app/jsmodules/sbProperties.jsm");
 
 // ADDITIONAL TODOS
 // * Handle losing the connection
@@ -136,7 +141,7 @@ var MRMR_NS = "http://skunk.grommit.com/data/1.0#murmuration";
  */
 var activityWidget = {
   
-  _showNotification: function(text, user, shouldAnimate, noticeId) {
+  _showNotification: function(text, user, shouldAnimate, noticeId, url) {
     // TODO ensure user
     
 	var replyMessage = /(.*)\s*#rid(\d+)(.*)/.exec(text);
@@ -157,9 +162,20 @@ var activityWidget = {
 	else
 		var node = $("#notification-template > .notification").clone();
 	node.get(0).setAttributeNS(MRMR_NS, "noticeId", noticeId);
-    node.click(function() {
-		loadInMediaTab("http://skunk.grommit.com/" + user.screen_name);
-	});
+	if (url) {
+		node.addClass("share-track");
+		node.click(function() {
+			var uri = Cc["@mozilla.org/network/io-service;1"]
+				.getService(Ci.nsIIOService)
+				.newURI(url, null, null);
+			dump("Playing:" + url + "\n");
+			gMM.sequencer.playURL(uri);
+		});
+	} else {
+		node.click(function() {
+			loadInMediaTab("http://skunk.grommit.com/" + user.screen_name);
+		});
+	}
     $(".avatar img", node).attr("src", user.profile_image_url)
                   .attr("alt", user.screen_name); // XXX hack
     $(".content", node).text(text);
@@ -184,6 +200,7 @@ var activityWidget = {
 	} else {
 		node.prependTo("#activity-container");
 	}
+
     if (shouldAnimate) {
       node.fadeIn("slow");
     }
@@ -223,15 +240,32 @@ var activityWidget = {
     }, function(m) { 
       // XXX fix error detection, user lookup
       var message = m.stanza.body;
-      message = /^(\w+):(.*)$/.exec(message);
-      var userName = message[1];
-      message = message[2];
-	  message = /^(.*)\s*\#id(\d+)$/.exec(message);
-	  noticeId = message[2];
-	  message = message[1];
-      laconica.callWithUserData(userName, function(data) {
-        controller._showNotification(message, data, true, noticeId);
-      });
+	  shareMessage = /^#track !(\w+) (.*)$/.exec(message);
+	  if (shareMessage) {
+		  // direct message w/ track sharing
+		  var userName = shareMessage[1];
+		  message = /^!url:([^\s]+) (.*)\s*\#mid(\d+)$/.exec(shareMessage[2]);
+		  var url = message[1];
+		  var noticeId = message[3];
+		  message = message[2];
+		  dump("New message " + message + " from " + userName + "\n");
+		  dump("url:" + url + "\n");
+		  laconica.callWithUserData(userName, function(data) {
+			controller._showNotification(message, data, true, noticeId, url);
+		  });
+	  } else {
+		  message = /^(\w+):(.*)$/.exec(message);
+		  if (message[1]) {
+			  var userName = message[1];
+			  message = message[2];
+			  message = /^(.*)\s*\#id(\d+)$/.exec(message);
+			  noticeId = message[2];
+			  message = message[1];
+			  laconica.callWithUserData(userName, function(data) {
+				controller._showNotification(message, data, true, noticeId);
+			  });
+		  }
+	  }
     });
   },
   
@@ -314,10 +348,16 @@ function loadInMediaTab(url) {
 var Murmur = {
 	murmuredTracks: null,
 
-	onBeforeTrackMurmured: function(guid) {
+	onBeforeTrackMurmured: function(item) {
 		if (Murmur.murmuredTracks == null)
 			Murmur.murmuredTracks = new Array();
 
+		var alreadyExists = false;
+		if (typeof(Murmur.murmuredTracks[item.guid]) == "undefined")
+			Murmur.murmuredTracks[item.guid] = new Object();
+		else
+			alreadyExists = true;
+					
 		var panel = window.top.document
 			.getElementById("murmuration-share-panel");
 		var vbox = window.top.document
@@ -350,7 +390,25 @@ var Murmur = {
 
 				img.addEventListener("click", function() {
 					var username = this.getAttributeNS(MRMR_NS, "username");
-					dump("sharing with: " + username + "\n");
+					// check to see if the post to skunk has already happened
+					// if it has, then share immediately - otherwise append
+					// this user to the shareWith queue
+					if (typeof(Murmur.murmuredTracks[item.guid].url) !=
+						 	"undefined")
+					{
+						dump("track has posted! now sharing\n");
+						Murmur.shareTracks(Murmur.murmuredTracks[item.guid],
+								username);
+					} else {
+						dump("track hasn't posted, appending " + username +
+							" to queue\n");
+						if (!Murmur.murmuredTracks[item.guid].shareWith)
+							Murmur.murmuredTracks[item.guid].shareWith =
+									new Array()
+						Murmur.murmuredTracks[item.guid].shareWith.push(username);
+						// The track will then be shared by the onTrackMurmured
+						// hook below
+					}
 				}, false);
 
 				userDiv.appendChild(img);
@@ -363,22 +421,49 @@ var Murmur = {
 		var x = window.top.screenX + (window.top.innerWidth/2);
 		var y = window.top.screenY + (window.top.innerHeight/2);
 		panel.openPopupAtScreen(x, y);
-		if ((typeof(Murmur.murmuredTracks[guid]) != "undefined") &&
-			(typeof(Murmur.murmuredTracks[guid].shareWith) != "undefined"))
-		{
-			return true;
+		
+		// If the post to skunk has already happened, then return true so
+		// that MurmurTrack won't re-post it
+		return alreadyExists;
+	},
+
+	onTrackMurmured: function(item, url) {
+		if (typeof(Murmur.murmuredTracks[item.guid]) == "undefined")
+			Murmur.murmuredTracks[item.guid] = new Object();
+		Murmur.murmuredTracks[item.guid].url = url;
+		Murmur.murmuredTracks[item.guid].item = item;
+
+		// If the user has already selected the users to share with, then
+		// go straight to the sharing bit
+		if (typeof(Murmur.murmuredTracks[item.guid].shareWith) != "undefined") {
+			dump("user queue found, sharing now\n");
+			Murmur.shareTracks(Murmur.murmuredTracks[item.guid]);
 		} else {
-			return false;
+			dump("users haven't been selected yet\n");
 		}
 	},
 
-	onTrackMurmured: function(guid, url) {
-		if (typeof(Murmur.murmuredTracks[guid]) == "undefined")
-			Murmur.murmuredTracks[guid] = new Object();
-		Murmur.murmuredTracks[guid].url = url;
-		if (typeof(Murmur.murmuredTracks[guid].shareWith) != "undefined")
-			Murmur.shareTracks(Murmur.murmuredTracks[guid]);
-	}
+	shareTracks: function(trackShare, user) {
+		var url = trackShare.url;
+		var item = trackShare.item;
+		var users = trackShare.shareWith;
+
+		var artist = item.getProperty(SBProperties.artistName);
+		var title = item.getProperty(SBProperties.trackName);
+
+		if (user) {
+			dump("sharing " + artist + "-" + title + " with " + user + "\n");
+			var me = murmuration.account.userName;
+			var message = "d " + user + " #track !" + me + " !url:" + url + " " + title + " by " + artist;
+			dump(message + "\n");
+			XMPP.send(murmuration.account.address,
+				<message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);
+		} else {
+			users.forEach(function(user) {
+				Murmur.shareTracks(trackShare, user);
+			});
+		}
+	},
 }
 
 

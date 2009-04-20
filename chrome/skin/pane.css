@@ -129,6 +129,11 @@ img.reply-icon {
 	width: 78%;
 }
 
+.share-track {
+	background-color: #444;
+	margin-top: 3px;
+}
+
 /** FOOTER **/
 
 #footer-container {

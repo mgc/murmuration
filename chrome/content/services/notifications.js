@@ -77,7 +77,8 @@ function finish() {
     channel.release();
     delete alertsService;
     LibraryUtils.mainLibrary.removeListener(this);
-	this.lfm.listeners.remove(this);
+	var lfm = Cc["@songbirdnest.com/lastfm;1"].getService().wrappedJSObject;
+	lfm.listeners.remove(this);
 	
 	var playbackHistory =
   	      Cc['@songbirdnest.com/Songbird/PlaybackHistoryService;1']
