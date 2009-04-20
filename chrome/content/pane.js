@@ -144,6 +144,7 @@ var activityWidget = {
   _showNotification: function(text, user, shouldAnimate, noticeId, url) {
     // TODO ensure user
     
+	// check to see if this is a reply to a previous notice
 	var replyMessage = /(.*)\s*#rid(\d+)(.*)/.exec(text);
 	var inReplyToNode;
 	if (replyMessage) {
@@ -157,11 +158,33 @@ var activityWidget = {
 		});
 	}
 
+	// if it's a reply, clone the reply-notification template
+	// otherwise clone the regular notification template
 	if (inReplyToNode)
 		var node = $("#reply-notification-template > .notification").clone();
-	else
+	else {
 		var node = $("#notification-template > .notification").clone();
+	
+		// set the reply icon click handler to allow the user to comment on
+		// this notice
+		$(".reply-icon", node).click(function(ev) {
+			var panel =
+				window.top.document.getElementById("murmuration-comment-panel");
+			panel.openPopup(ev.target);
+			var commentBox = window.top.document.getElementById("new-comment");
+			commentBox.setAttributeNS(MRMR_NS, "user", user.screen_name);
+			commentBox.setAttributeNS(MRMR_NS, "noticeId", noticeId);
+			commentBox.value = "";
+			ev.stopPropagation();
+			ev.preventDefault();
+		});
+	}
+
+	// set the noticeId in an attribute so we can reference it later
 	node.get(0).setAttributeNS(MRMR_NS, "noticeId", noticeId);
+
+	// if there's a URL that goes along with this, then it's a track-sharing
+	// notice.  setup the click handler so the user can play the track
 	if (url) {
 		node.addClass("share-track");
 		node.click(function() {
@@ -171,28 +194,24 @@ var activityWidget = {
 			dump("Playing:" + url + "\n");
 			gMM.sequencer.playURL(uri);
 		});
+	// otherwise it's a regular notice, and default the click handler to open
+	// the user's laconica page
 	} else {
 		node.click(function() {
 			loadInMediaTab("http://skunk.grommit.com/" + user.screen_name);
 		});
 	}
+	
+	// set the user avatar and body of the notice
     $(".avatar img", node).attr("src", user.profile_image_url)
                   .attr("alt", user.screen_name); // XXX hack
     $(".content", node).text(text);
-	$(".reply-icon", node).click(function(ev) {
-		var panel =
-			window.top.document.getElementById("murmuration-comment-panel");
-		panel.openPopup(ev.target);
-		var commentBox = window.top.document.getElementById("new-comment");
-		commentBox.setAttributeNS(MRMR_NS, "user", user.screen_name);
-		commentBox.setAttributeNS(MRMR_NS, "noticeId", noticeId);
-		commentBox.value = "";
-		ev.stopPropagation();
-		ev.preventDefault();
-	});
+
     if (shouldAnimate) {
       node.hide();
     }
+
+	// position the notice accordingly
 	if (inReplyToNode) {
 		node.addClass("reply");
 		node.get(0).setAttributeNS(MRMR_NS, "origRNID", replyNoticeId);
