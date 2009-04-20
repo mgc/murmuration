@@ -201,7 +201,43 @@ var activityWidget = {
 			loadInMediaTab("http://skunk.grommit.com/" + user.screen_name);
 		});
 	}
-	
+
+	// tag => action parsing
+	if (text.indexOf("#played") >= 0) {
+		// strip #played tags, don't bother including an action icon since
+		// this will be the most commonly displayed notice
+		text = text.replace("#played", "");
+	} else {
+		// matches the following commands
+		//   * #tagged foo,bar
+		//   * #rated 0-9
+		// and probably more than it should... 
+		var command = /#(\w+) (.*)$/.exec(text);
+		var actionIcon = $(".action img", node);
+		if (command) {
+			switch (command[1]) {
+				case "tagged":
+					text = text.replace("#tagged ", "tagged: ");
+					actionIcon.addClass("tag");
+					break;
+				case "rated":
+					text = text.replace("#rated " + command[2], "");
+					actionIcon.addClass("rating");
+					actionIcon.addClass("rating-" + command[2]);
+					break;
+				case "list":
+					if (command[2] == "1")
+						text = "created a new playlist: " + text;
+					else
+						text = "deleted playlist: " + text;
+					text = text.replace("#list " + command[2], "");
+					break;
+				default:
+					dump("Unknown command: " + command[1] + "\n");
+					dump("Text: " + text + "\n");
+			}
+		}
+	}
 	// set the user avatar and body of the notice
     $(".avatar img", node).attr("src", user.profile_image_url)
                   .attr("alt", user.screen_name); // XXX hack

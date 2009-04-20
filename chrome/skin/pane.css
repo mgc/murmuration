@@ -64,7 +64,7 @@ h1 {
   width: 100%;
 }
 #online-container img,
-#activity-container img {
+#activity-container div.avatar img {
   width: 24px;
   height: 24px;  
 }
@@ -133,6 +133,30 @@ img.reply-icon {
 	background-color: #444;
 	margin-top: 3px;
 }
+
+div.action img.tag {
+	min-height: 16px;
+	min-width: 16px;
+	background-position: -16px -16px;
+	background-repeat: no-repeat;
+	background-image: url(chrome://sb-lastfm/skin/button-tag.png);
+	display: inline-block;
+	float: left;
+	margin-right: 2px;
+}
+div.action img.rating {
+	min-width: 70px;
+	min-height: 18px;
+	background-repeat: no-repeat;
+	display: inline-block;
+	background-image: url(chrome://songbird/skin/media-control-pane/button-faceplate-ratings.png);
+}
+div.action img.rating-0 { background-position:0px -18px; }
+div.action img.rating-1 { background-position:0px -54px; }
+div.action img.rating-2 { background-position:0px -90px; }
+div.action img.rating-3 { background-position:0px -126px; }
+div.action img.rating-4 { background-position:0px -162px; }
+div.action img.rating-5 { background-position:0px -198px; }
 
 /** FOOTER **/
 

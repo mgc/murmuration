@@ -30,6 +30,9 @@ var batchCount = 0;
 
 var notificationFloodCounter = 0;
 var notificationFloodTimestamp;
+
+var newLists = []
+
 // INITIALIZATION
 // ----------------------------------------------------------------------
 
@@ -51,6 +54,8 @@ function init() {
   
   // Listen for rating events
   LibraryUtils.mainLibrary.addListener(this, false,
+    Ci.sbIMediaList.LISTENER_FLAGS_ITEMADDED | 
+    Ci.sbIMediaList.LISTENER_FLAGS_BEFOREITEMREMOVED | 
     Ci.sbIMediaList.LISTENER_FLAGS_ITEMUPDATED | 
     Ci.sbIMediaList.LISTENER_FLAGS_BATCHBEGIN | 
     Ci.sbIMediaList.LISTENER_FLAGS_BATCHEND);  
@@ -130,9 +135,19 @@ function receiveNotification(m) {
 // ----------------------------------------------------------------------
 
 
-function onItemAdded(aMediaList, aMediaItem, aIndex) { return true; }
+function onItemAdded(aMediaList, aMediaItem, aIndex) {
+	if (aMediaItem.getProperty(SBProperties.isList) == 1) {
+		// track it in the newLists hash
+		newLists[aMediaItem.guid] = true;
+	}
+	return true;
+}
 
-function onBeforeItemRemoved(aMediaList, aMediaItem, aIndex) { return true; }
+function onBeforeItemRemoved(aMediaList, aMediaItem, aIndex) {
+	if (aMediaItem.getProperty(SBProperties.isList) == 1)
+		sendNotification(aMediaItem, " #list 0");
+	return true;
+}
 
 function onAfterItemRemoved(aMediaList, aMediaItem, aIndex) { return true; }
 
@@ -141,8 +156,6 @@ function onItemUpdated(aMediaList, aMediaItem, aProperties) {
   if (batchCount == 0) {
     for (var prop in ArrayConverter.JSEnum(aProperties)) {
       if (prop.QueryInterface(Ci.sbIProperty).id == SBProperties.rating) {
-
-
         var rating = parseInt(aMediaItem.getProperty(SBProperties.rating));
         var ratingText = rating;
         
@@ -158,7 +171,17 @@ function onItemUpdated(aMediaList, aMediaItem, aProperties) {
 */        
         sendNotification(aMediaItem, " #rated " + ratingText);
         break;
-      }
+      } else if (prop.id == SBProperties.mediaListName) {
+		if (aMediaItem.name == "Playlist")
+			return true;
+		// check to see if this was a newly created list
+		// otherwise it's just a rename
+		if (newLists[aMediaItem.guid] == true) {
+			dump("New playlist:" + aMediaItem.name + "\n");
+			sendNotification(aMediaItem, " #list 1");
+			delete newLists[aMediaItem.guid];
+		}
+	  }
     }
   }
   else {
@@ -192,7 +215,7 @@ function onProfileUpdated() { return true; }
 function onAuthorisationSuccess() { return true; }
 function onItemTagsAdded(aItem, tags) {
 	var tagString = tags.join(",");
-	sendNotification(aItem, " #tagged with " + tagString);
+	sendNotification(aItem, " #tagged " + tagString);
 }
 function onItemTagRemoved(aItem, tag) {
 	sendNotification(aItem, " #untagged with " + tag);
@@ -223,12 +246,16 @@ function onEntriesAdded(aEntries) {
 
 // TODO break this up
 function sendNotification(mediaItem, message) {
-  // XXX TODO cleanup
-  var artist = mediaItem.getProperty(SBProperties.artistName);
-  var album = mediaItem.getProperty(SBProperties.albumName);
-  var track = mediaItem.getProperty(SBProperties.trackName);
-  message = "'" + track + "' by '" + artist + "'" + message;
-  // XXX TODO probably need to escape this
-  XMPP.send(murmuration.account.address,
-           <message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);  
-}
+	// XXX TODO cleanup
+	if (mediaItem.getProperty(SBProperties.isList) == 0) {
+		var artist = mediaItem.getProperty(SBProperties.artistName);
+		var album = mediaItem.getProperty(SBProperties.albumName);
+		var track = mediaItem.getProperty(SBProperties.trackName);
+		message = "'" + track + "' by '" + artist + "'" + message;
+	} else {
+		message = mediaItem.name + message;
+	}
+	// XXX TODO probably need to escape this
+	XMPP.send(murmuration.account.address,
+		   <message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);  
+	}
