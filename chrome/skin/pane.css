@@ -142,7 +142,16 @@ div.action img.tag {
 	background-image: url(chrome://sb-lastfm/skin/button-tag.png);
 	display: inline-block;
 	float: left;
-	margin-right: 2px;
+	margin-right: 4px;
+}
+div.action img.list {
+	min-height: 16px;
+	min-width: 16px;
+	background-repeat: no-repeat;
+	background-image: url(chrome://songbird/skin/service-pane/icon-playlist.png);
+	display: inline-block;
+	float: left;
+	margin-right: 4px;
 }
 div.action img.rating {
 	min-width: 70px;

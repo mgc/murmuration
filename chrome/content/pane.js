@@ -226,8 +226,9 @@ var activityWidget = {
 					actionIcon.addClass("rating-" + command[2]);
 					break;
 				case "list":
+					actionIcon.addClass("list");
 					if (command[2] == "1")
-						text = "created a new playlist: " + text;
+						text = "created playlist: " + text;
 					else
 						text = "deleted playlist: " + text;
 					text = text.replace("#list " + command[2], "");
