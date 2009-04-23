@@ -30,6 +30,7 @@ var batchCount = 0;
 
 var notificationFloodCounter = 0;
 var notificationFloodTimestamp;
+var notificationFloodProtection = false;
 
 var newLists = []
 
@@ -98,18 +99,34 @@ function finish() {
 // ----------------------------------------------------------------------
 
 function receiveNotification(m) {
-	var now = Date.now()/1000;
+	var now = Math.floor(Date.now()/1000);
+	dump("notification @ " + now + " ?= " + notificationFloodTimestamp + "\n");
+	// If we receive >= 10 notifications in the same second, then enable
+	// flood protection
 	if (notificationFloodTimestamp == now) {
 		// if this notification is at the same time, then increment the counter
 		if (notificationFloodCounter++ == 10) {
-			alertService.showAlertNotification("", "Notification",
-				"Skipping mass notification flood...");
+			dump("Notifying of flood\n");
+			alertService.showAlertNotification("", "murmuration",
+				"Flood protection activated");
+			notificationFloodProtection = true;
 			return;
-		} else if (notificationFloodCounter > 10)
+		}
+	} else if (notificationFloodProtection) {
+		// keep flood protection enabled for a rolling 5 second window
+		if (Math.abs(notificationFloodTimestamp - now) < 5) {
+			dump("Within flood protection window\n");
+			notificationFloodTimestamp = now;
 			return;
-	} else {
-		// otherwise reset the timer
+		}
+	
+		// if we got here then we're past the 5 second window, so reset the
+		// counters
+		dump("Resetting flood protection\n");
 		notificationFloodCounter = 0;
+		notificationFloodTimestamp = now;
+		notificationFloodProtection = false;
+	} else {
 		notificationFloodTimestamp = now;
 	}
 
