@@ -212,6 +212,12 @@ var activityWidget = {
 		//   * #tagged foo,bar
 		//   * #rated 0-9
 		// and probably more than it should... 
+
+		// trim leading/trailing whitespace
+		var result = text.match(/^\s*(.*\S)\s*$/);
+		if (result !== null && result.length === 2)
+			text = result[1];
+		
 		var command = /#(\w+) (.*)$/.exec(text);
 		var actionIcon = $(".action img", node);
 		if (command) {
@@ -227,11 +233,11 @@ var activityWidget = {
 					break;
 				case "list":
 					actionIcon.addClass("list");
+					text = text.replace("#list " + command[2], "");
 					if (command[2] == "1")
 						text = "created playlist: " + text;
 					else
 						text = "deleted playlist: " + text;
-					text = text.replace("#list " + command[2], "");
 					break;
 				default:
 					dump("Unknown command: " + command[1] + "\n");
