@@ -100,7 +100,8 @@ function finish() {
 
 function receiveNotification(m) {
 	var now = Math.floor(Date.now()/1000);
-	dump("notification @ " + now + " ?= " + notificationFloodTimestamp + "\n");
+	dump("notification @ " + now + " ?= " + notificationFloodTimestamp + 
+			" // " + notificationFloodProtection + "\n");
 	// If we receive >= 10 notifications in the same second, then enable
 	// flood protection
 	if (notificationFloodTimestamp == now) {
@@ -111,10 +112,13 @@ function receiveNotification(m) {
 				"Flood protection activated");
 			notificationFloodProtection = true;
 			return;
+		} else if (notificationFloodCounter > 10) {
+			dump("Within flood protection window\n");
+			return;
 		}
 	} else if (notificationFloodProtection) {
-		// keep flood protection enabled for a rolling 5 second window
-		if (Math.abs(notificationFloodTimestamp - now) < 5) {
+		// keep flood protection enabled for a rolling 10 second window
+		if (Math.abs(notificationFloodTimestamp - now) < 10) {
 			dump("Within flood protection window\n");
 			notificationFloodTimestamp = now;
 			return;
