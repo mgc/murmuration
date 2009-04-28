@@ -42,6 +42,13 @@ panel#murmuration-share-panel {
 
 #murmuration-share-panel #murmur-vbox vbox.user {
 	-moz-box-align: center;
+	cursor: pointer;
+}
+
+#murmuration-share-panel #murmur-vbox vbox.user-disabled {
+	-moz-box-align: center;
+	cursor: normal;
+	opacity: 0.2;
 }
 
 #murmuration-share-panel #murmur-vbox image {

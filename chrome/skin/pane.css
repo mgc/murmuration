@@ -81,7 +81,8 @@ h1 {
 .notification {
   font-size: 10px;
   padding-left: 10px;
-  width: 90%;
+  padding-right: 10px;
+  width: auto;
   cursor: pointer;
   margin-bottom: 5px;
 }
@@ -130,8 +131,9 @@ img.reply-icon {
 }
 
 .share-track {
-	background-color: #444;
+	background-color: #222;
 	margin-top: 3px;
+	padding-top: 5px;
 }
 
 div.action img.tag {

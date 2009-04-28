@@ -569,16 +569,28 @@ var Murmur = {
 				name.className = "user-name";
 				name.setAttribute("value", user.screen_name);
 
-				img.addEventListener("click", function() {
-					var username = this.getAttributeNS(MRMR_NS, "username");
-
-					// send the stream URL to the user
-					Murmur.streamTracks(item, username);
-				}, false);
-
 				userDiv.appendChild(img);
 				userDiv.appendChild(name);
 				vbox.appendChild(userDiv);
+
+				// no point in sharing tracks with yourself
+				if (userName == murmuration.account.userName) {
+					userDiv.className = "user-disabled";
+					return;
+				}
+
+				img.addEventListener("click", function() {
+					// parentNode should be the "user" div
+					this.parentNode.className = "user-disabled";
+
+					// remove the click listener
+					this.removeEventListener("click", arguments.callee , false);
+
+					// send the stream URL to the user
+					var username = this.getAttributeNS(MRMR_NS, "username");
+					Murmur.streamTracks(item, username);
+				}, false);
+
 			});
 		}
 		
