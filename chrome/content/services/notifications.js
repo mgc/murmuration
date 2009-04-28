@@ -134,7 +134,26 @@ function receiveNotification(m) {
 		notificationFloodTimestamp = now;
 	}
 
-	var txt = m.stanza.body.toString().replace(/#r?id\d+/g, "");
+	// ignore Murmuration DM responses
+	var msg = m.stanza.body.toString();
+	dump("RECVD:" + msg + "\n");
+	if (/^\[Murmuration\]/.exec(msg)) {
+		dump("Ignoring direct message response\n");
+		return;
+	}
+
+	var actionCommand = /^#([a-zA-Z]+) !(\w+) (.*)/.exec(msg);
+	if (actionCommand) {
+		dump("got action command\n");
+		var username = actionCommand[2];
+		msg = /^!url:([^\s]+) (.*)\s*\#mid(\d+)$/.exec(actionCommand[3]);
+		var url = msg[1];
+		var noticeId = msg[3];
+		msg = msg[2];
+		msg = username + " shared the following track with you: " + msg;
+	}
+
+	var txt = msg.replace(/#r?id\d+/g, "");
 	alertService.showAlertNotification(
 		"",
 		"Notification",

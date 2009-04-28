@@ -106,7 +106,8 @@ Murmuration.prototype = {
 					"murmur_sharetrack",
 					"Murmur Track",
 					"Share this track on Murmuration",
-					this.plCmd_MurmurTrack);
+					this.MurmurTrack_STREAM);
+					//this.MurmurTrack_POST);
 		//this.m_MurmurCommands.setVisibleCallback(plCmd_IsAnyTrackSelected);
 
 		this.m_Commands.appendPlaylistCommands(null, "library_cmdmurmurs",
@@ -152,6 +153,24 @@ Murmuration.prototype = {
 	},
 
 	plCmd_MurmurTrack: function(aContext, aSubMenuId, aCommandId, aHost) {
+		//return this.MurmurTrack_POST(aContext, aSubMenuId, aCommandId, aHost);
+		return this.MurmurTrack_STREAM(aContext, aSubMenuId, aCommandId, aHost);
+	},
+
+	MurmurTrack_STREAM: function(aContext, aSubMenuId, aCommandId, aHost) {
+		var selection = unwrap(aContext.playlist).mediaListView.selection;
+		var items = selection.selectedMediaItems;
+		while (items.hasMoreElements()) {
+			var item = items.getNext();
+			var guid = item.guid;
+			for (var i=0; i<listeners.length; i++) {
+				// Trigger listeners
+				listeners[i].onTrackMurmured(item);
+			}
+		}
+	},
+
+	MurmurTrack_POST: function(aContext, aSubMenuId, aCommandId, aHost) {
 		var selection = unwrap(aContext.playlist).mediaListView.selection;
 		var items = selection.selectedMediaItems;
 		while (items.hasMoreElements()) {

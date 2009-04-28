@@ -302,19 +302,39 @@ var activityWidget = {
     }, function(m) { 
       // XXX fix error detection, user lookup
       var message = m.stanza.body;
-	  shareMessage = /^#track !(\w+) (.*)$/.exec(message);
-	  if (shareMessage) {
+
+	  var actionCommand = /^#([a-zA-Z]+) !(\w+) (.*)$/.exec(message);
+	  if (actionCommand) {
+	    var cmd = actionCommand[1];
+		var userName = actionCommand[2];
+		var message = actionCommand[3];
+		switch (cmd) {
 		  // direct message w/ track sharing
-		  var userName = shareMessage[1];
-		  message = /^!url:([^\s]+) (.*)\s*\#mid(\d+)$/.exec(shareMessage[2]);
-		  var url = message[1];
-		  var noticeId = message[3];
-		  message = message[2];
-		  dump("New message " + message + " from " + userName + "\n");
-		  dump("url:" + url + "\n");
-		  laconica.callWithUserData(userName, function(data) {
-			controller._showNotification(message, data, true, noticeId, url);
-		  });
+		  case "track":
+			message = /^!url:([^\s]+) (.*)\s*\#mid(\d+)$/.exec(message);
+			var url = message[1];
+			var noticeId = message[3];
+			message = message[2];
+			dump("Track message " + message + " from " + userName + "\n");
+			dump("url:" + url + "\n");
+			laconica.callWithUserData(userName, function(data) {
+			  controller._showNotification(message, data, true, noticeId, url);
+			});
+			break;
+		  case "stream":
+			message = /^!url:([^\s]+) (.*)\s*\#mid(\d+)$/.exec(message);
+			var url = message[1];
+			var noticeId = message[3];
+			message = message[2];
+			dump("Stream message " + message + " from " + userName + "\n");
+			dump("url:" + url + "\n");
+			laconica.callWithUserData(userName, function(data) {
+			  controller._showNotification(message, data, true, noticeId, url);
+			});
+			break;
+	      default:
+			dump("Unknown action command:" + m.stanza.body + "\n");
+		}
 	  } else {
 		  message = /^(\w+):(.*)$/.exec(message);
 		  if (message[1]) {
@@ -411,6 +431,15 @@ var Murmur = {
 	murmuredTracks: null,
 
 	onBeforeTrackMurmured: function(item) {
+		return Murmur.beforeTrackMurmured_POST(item);
+	},
+	onTrackMurmured: function(item, url) {
+		//return Murmur.trackMurmured_POST(item, url);
+		return Murmur.trackMurmured(item, url);
+	},
+
+	// POST to skunk implementation
+	beforeTrackMurmured_POST: function(item) {
 		if (Murmur.murmuredTracks == null)
 			Murmur.murmuredTracks = new Array();
 
@@ -489,7 +518,7 @@ var Murmur = {
 		return alreadyExists;
 	},
 
-	onTrackMurmured: function(item, url) {
+	trackMurmured_POST: function(item, url) {
 		if (typeof(Murmur.murmuredTracks[item.guid]) == "undefined")
 			Murmur.murmuredTracks[item.guid] = new Object();
 		Murmur.murmuredTracks[item.guid].url = url;
@@ -505,6 +534,71 @@ var Murmur = {
 		}
 	},
 
+	trackMurmured: function(item) {
+		// grab the panel and clear its existing contents
+		var panel = window.top.document
+			.getElementById("murmuration-share-panel");
+		var vbox = window.top.document
+			.getElementById("murmur-vbox");
+		while (vbox.firstChild)
+			vbox.removeChild(vbox.firstChild);
+		
+		// Load current online friends
+		var contactPresences = XMPP.cache.fetch({
+			event     : 'presence',
+			direction : 'in',
+			stanza    : function(s) {
+			  return s.@type == undefined;
+			}
+		});
+
+		var numContacts = 0;
+		for each(var presence in contactPresences) {
+			var userName =
+				XMPP.nickFor(murmuration.account.jid, presence.stanza.@from);
+			var doc = window.top.document;
+			laconica.callWithUserData(userName, function(user) {
+				numContacts++;
+				var userDiv = doc.createElement("vbox");
+				userDiv.className = "user";
+				var img = doc.createElement("image");
+				img.className = "user-avatar";
+				img.setAttribute("src", user.profile_image_url);
+				img.setAttributeNS(MRMR_NS, "username", user.screen_name);
+				var name = doc.createElement("label");
+				name.className = "user-name";
+				name.setAttribute("value", user.screen_name);
+
+				img.addEventListener("click", function() {
+					var username = this.getAttributeNS(MRMR_NS, "username");
+
+					// send the stream URL to the user
+					Murmur.streamTracks(item, username);
+				}, false);
+
+				userDiv.appendChild(img);
+				userDiv.appendChild(name);
+				vbox.appendChild(userDiv);
+			});
+		}
+		
+		dump(numContacts + " contacts online\n");
+		// resize the sharing panel
+		var contactsPerSide = Math.ceil(Math.sqrt(numContacts));
+		dump(contactsPerSide + " per side\n");
+
+		var pxPerSide = contactsPerSide * 60;
+		vbox.style.width = pxPerSide + "px";
+		dump("width:" + vbox.style.width + "\n");
+		
+		var x = window.top.screenX + (window.top.innerWidth/2) -
+			(pxPerSide / 2);
+		var y = window.top.screenY + (window.top.innerHeight/2) -
+			(pxPerSide / 2);
+		panel.openPopupAtScreen(x, y);
+	},
+
+	// POST method of sharing
 	shareTracks: function(trackShare, user) {
 		var url = trackShare.url;
 		var item = trackShare.item;
@@ -526,6 +620,34 @@ var Murmur = {
 			});
 		}
 	},
+	
+	// STREAM method of sharing
+	streamTracks: function(item, user) {
+		var artist = item.getProperty(SBProperties.artistName);
+		var title = item.getProperty(SBProperties.trackName);
+
+		var me = murmuration.account.userName;
+		var p = Application.prefs.getValue("extensions.httpserv.port", 38080);
+
+		var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+			.createInstance(Ci.nsIXMLHttpRequest);
+		xhr.open("GET", "http://skunk.grommit.com/ip.php", true);
+		xhr.onreadystatechange = function() {
+			if (this.readyState != 4)
+				return;
+			if (this.status == 200) {
+				var host = this.responseText;
+				var url = "http://" + host + ":" + p + "/contents/items/" +
+					item.guid;
+				var message = "d " + user + " #stream !" + me + " !url:" +
+					url + " " + title + " by " + artist;
+				dump(message + "\n");
+				XMPP.send(murmuration.account.address,
+					<message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);
+			}
+		};
+		xhr.send(null);
+	}
 }
 
 

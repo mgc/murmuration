@@ -12,8 +12,8 @@
 	<panel id="murmuration-share-panel" position="before_end">
 		<stack>
 			<vbox id="background" flex="1" />
-			<vbox id="murmur-vbox">
-			</vbox>
+			<hbox id="murmur-vbox">
+			</hbox>
 		</stack>
 	</panel>
 	<panel id="murmuration-comment-panel" position="before_end">

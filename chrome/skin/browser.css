@@ -23,20 +23,27 @@ panel#murmuration-comment-panel {
 /* MURMUR/SHARE PANEL */
 panel#murmuration-share-panel {
     -moz-border-radius: 5px;
-    opacity: 0.8;
+	background-color: transparent;
+	-moz-appearance: none;
 }
 
 #murmuration-share-panel #background {
     -moz-border-radius: 5px;
     background-color: black;
-    opacity: 1.0;
+    opacity: 0.8;
     width: 100%;
 }
 
 #murmuration-share-panel #murmur-vbox {
     padding: 4px;
     opacity: 1.0 !important;
+	display: block;
 }
+
+#murmuration-share-panel #murmur-vbox vbox.user {
+	-moz-box-align: center;
+}
+
 #murmuration-share-panel #murmur-vbox image {
     padding: 4px;
     opacity: 1.0 !important;
