@@ -1,0 +1,16 @@
+DEPTH = ../../..
+topsrcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include $(DEPTH)/build/autodefs.mk
+
+TARGET_COMPONENTS_DIR = ../.xpistage/modules
+
+include $(topsrcdir)/build/rules.mk
+
+libs:: extinstall
+
+extinstall:
+	$(MKDIR) -p $(TARGET_COMPONENTS_DIR)
+	$(CP) -f $(srcdir)/*.jsm $(TARGET_COMPONENTS_DIR)

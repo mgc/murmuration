@@ -1,0 +1,64 @@
+DEPTH = ../../../..
+topsrcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include $(DEPTH)/build/autodefs.mk
+
+# the name of our component
+target_name = sbMurmurationUtilities
+
+# compile these C++ files
+CPP_SRCS = sbMurmurationUtilitiesModule.cpp \
+           sbMurmurationUtilities.cpp \
+           $(NULL)
+
+# include the headers generated from our IDL, plus bits of the XULRunner SDK
+# that we're using
+CPP_INCLUDES = $(DEPTH)/extensions/murmuration/components/public \
+               $(MOZSDK_INCLUDE_DIR) \
+               $(MOZSDK_INCLUDE_DIR)/nspr \
+               $(MOZSDK_INCLUDE_DIR)/xpcom \
+               $(MOZSDK_INCLUDE_DIR)/string \
+               $(MOZSDK_INCLUDE_DIR)/necko \
+               $(MOZSDK_IDL_DIR) \
+               $(NULL)
+
+# build a component (ie: a dynamically loadable module)
+IS_COMPONENT = 1
+
+# build a library - DLL_SUFFIX is the platform-specific file extensions for
+# dynamic libraries (.so on unix, .dll on windows, etc)
+DYNAMIC_LIB = $(target_name)$(DLL_SUFFIX)
+
+# compile our C++ files into the component
+DYNAMIC_LIB_OBJS = $(CPP_SRCS:.cpp=$(OBJ_SUFFIX))
+
+# our component depends on these mozilla libraries
+DYNAMIC_LIB_EXTRA_IMPORTS = nspr4 \
+                            xpcom \
+                            xpcomglue_s \
+                            $(NULL)
+
+DYNAMIC_LIB_IMPORT_PATHS = $(MOZSDK_LIB_DIR) \
+                           $(NULL)
+
+ifeq ($(SB_PLATFORM), windows)
+  DYNAMIC_LIB_EXTRA_IMPORTS += unicharutil_external_s \
+                               $(NULL)
+endif
+
+ifeq ($(SB_PLATFORM), macosx)
+  DYNAMIC_LIB_EXTRA_IMPORTS += mozjs
+endif
+
+# put this in our staging directory
+EXTENSION_STAGE_DIR = $(SONGBIRD_OBJDIR)/extensions/murmuration/.xpistage
+
+EXTRA_SCRIPT_COMPONENTS = $(srcdir)/Murmuration.js
+SONGBIRD_COMPONENTS = $(EXTRA_SCRIPT_COMPONENTS)
+
+include $(topsrcdir)/build/rules.mk
+
+libs::
+	$(INSTALL_PROG) $(DYNAMIC_LIB) $(SONGBIRD_COMPONENTSDIR)

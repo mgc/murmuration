@@ -1,0 +1,10 @@
+#include "nsISupports.idl"
+interface nsISocketTransport;
+
+[scriptable, uuid(f6a0d164-1dd1-11b2-80ed-b64e2e5e2ca2)]
+interface sbIMurmurationUtilities : nsISupports
+{
+  AString getIPAddress(in nsISocketTransport socket);
+};
+
+

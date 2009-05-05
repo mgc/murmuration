@@ -1,0 +1,20 @@
+DEPTH = ../../../..
+topsrcdir = @top_srcdir@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include $(DEPTH)/build/autodefs.mk
+
+# compile these IDL files
+XPIDL_SRCS = sbIMurmurationUtilities.idl \
+             $(NULL)
+
+# into this xpt (an xpt is like a compiled IDL read at runtime)
+XPIDL_MODULE = sbMurmurationUtilities.xpt
+XPIDL_MODULE_TYPELIBS = $(XPIDL_SRCS:.idl=.xpt)
+
+# and put it into the extension
+EXTENSION_STAGE_DIR = ../../.xpistage
+
+include $(topsrcdir)/build/rules.mk
+
