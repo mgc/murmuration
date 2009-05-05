@@ -48,6 +48,7 @@ Cu.import('resource://xmpp4moz/xmpp.jsm');
 Cu.import('resource://xmpp4moz/json.jsm');
 Cu.import('resource://xmpp4moz/namespaces.jsm');
 Cu.import('resource://xmpp4moz/log.jsm');
+Cu.import('resource://xmpp4moz/client_service.jsm');
 
 Cu.import('resource://murmuration/account.jsm');
 
@@ -58,6 +59,7 @@ Cu.import('resource://murmuration/account.jsm');
 var channel;
 var services = {};
 var observer;
+var connectionObserver;
 
 // INITIALIZATION
 // ----------------------------------------------------------------------
@@ -68,6 +70,23 @@ function init() {
   account.init();
 
   loadServices();
+
+  var connectionObserver = {
+	  observe: function(subject, topic, data) {
+		  if (topic == "connector-connected") {
+			  // Get the connector somehow
+			  var connector = subject;
+
+			  // Find out the IP address for this connector
+			  var svc = Cc["@songbirdnest.com/Songbird/MurmurationUtilities;1"]
+								   .createInstance(Ci.sbIMurmurationUtilities);
+			  murmuration.ip = svc.getIPAddress(connector._socket._transport);
+			  dump("setting ip to:" + murmuration.ip + "\n");
+		  }
+	  }
+  };
+  service.addObserver(connectionObserver, 'not-used', false);
+
   restoreOnlineState();
 
   observer = { observe: function(subject, topic, data) { finish(); }};
@@ -143,7 +162,8 @@ function restoreOnlineState() {
 
 var murmuration = {
     services: services,
-    account: account
+    account: account,
+	ip: null,
 };
 
 init();

@@ -88,14 +88,15 @@ Murmuration.prototype = {
 		var mgr = Cc["@songbirdnest.com/Songbird/PlaylistCommandsManager;1"]
 			.getService(Ci.sbIPlaylistCommandsManager);
 
-		var defaultCommands = mgr.request(kPlaylistCommands.MEDIAITEM_DEFAULT);
-
 		// Make a new command builder
 		this.m_Commands = new PlaylistCommandsBuilder();
 
+		/*
 		// Append the default commands
+		var defaultCommands = mgr.request(kPlaylistCommands.MEDIAITEM_DEFAULT);
 		this.m_Commands.appendPlaylistCommands(null, "library_cmdobj_defaults",
 				defaultCommands);
+		*/
 
 		// Make a new command builder for the Murmuration commands
 		this.m_MurmurCommands = new PlaylistCommandsBuilder();
@@ -117,6 +118,10 @@ Murmuration.prototype = {
 				"", this.m_Commands);
 		mgr.registerPlaylistCommandsMediaItem("", "smart", this.m_Commands);
 		mgr.registerPlaylistCommandsMediaItem("", "simple", this.m_Commands);
+
+		this.hostname = Cc["@mozilla.org/network/dns-service;1"].
+            getService(Components.interfaces.nsIDNSService).myHostName;
+		dump("Hostname = " + this.hostname + "\n");
 	},
   
 	// Shutdown

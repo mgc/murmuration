@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+#filter substitution
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#"
      xmlns:songbird="http://www.songbirdnest.com/2007/addon-metadata-rdf#">
   <Description about="urn:mozilla:install-manifest">
-    <em:id>{b3ed606a-4fc0-ac4b-bfc0-4a89088fef3b}</em:id>
+    <em:id>@EXTENSION_UUID@</em:id>
     <em:type>2</em:type>
-    <em:name>Murmuration</em:name>
-    <em:version>1.0.0.0</em:version>
+    <em:name>@EXTENSION_NAME@</em:name>
+    <em:version>@EXTENSION_VER@</em:version>
     <em:creator>POTI</em:creator>
 
     <em:description>Social Streaming - Prototype</em:description>
@@ -13,8 +14,8 @@
     <em:targetApplication>
       <Description>
         <em:id>songbird@songbirdnest.com</em:id>
-        <em:minVersion>0.8.0pre</em:minVersion>
-        <em:maxVersion>1.2.0a</em:maxVersion>
+        <em:minVersion>@EXTENSION_MIN_VER@</em:minVersion>
+        <em:maxVersion>@EXTENSION_MAX_VER@</em:maxVersion>
       </Description>
     </em:targetApplication>
     
@@ -30,7 +31,7 @@
          See http://wiki.songbirdnest.com/Developer/Articles/Getting_Started/Display_Panes -->
     <songbird:displayPane>
       <Description>
-        <songbird:contentTitle>Murmuration</songbird:contentTitle>
+        <songbird:contentTitle>@EXTENSION_NAME@</songbird:contentTitle>
         <songbird:contentUrl>chrome://murmuration/content/pane.xhtml</songbird:contentUrl>
         <songbird:contentIcon>chrome://murmuration/skin/pane-icon.png</songbird:contentIcon>
         <songbird:defaultWidth>200</songbird:defaultWidth>

@@ -635,30 +635,39 @@ var Murmur = {
 	
 	// STREAM method of sharing
 	streamTracks: function(item, user) {
+		if (Application.prefs.getValue("extensions.murmuration.external_ip",
+					false))
+		{
+			var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+				.createInstance(Ci.nsIXMLHttpRequest);
+			xhr.open("GET", "http://skunk.grommit.com/ip.php", true);
+			xhr.onreadystatechange = function() {
+				if (this.readyState != 4)
+					return;
+				if (this.status == 200) {
+					var publicIP = this.responseText;
+					Murmur.sendStreamMessage(publicIP, item, user);
+				}
+			};
+			xhr.send(null);
+		} else {
+			dump("my IP: " + murmuration.ip + "\n");
+			Murmur.sendStreamMessage(murmuration.ip, item, user);
+		}
+	},
+
+	sendStreamMessage: function(host, item, user) {
 		var artist = item.getProperty(SBProperties.artistName);
 		var title = item.getProperty(SBProperties.trackName);
-
-		var me = murmuration.account.userName;
 		var p = Application.prefs.getValue("extensions.httpserv.port", 38080);
+		var me = murmuration.account.userName;
 
-		var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
-			.createInstance(Ci.nsIXMLHttpRequest);
-		xhr.open("GET", "http://skunk.grommit.com/ip.php", true);
-		xhr.onreadystatechange = function() {
-			if (this.readyState != 4)
-				return;
-			if (this.status == 200) {
-				var host = this.responseText;
-				var url = "http://" + host + ":" + p + "/contents/items/" +
-					item.guid;
-				var message = "d " + user + " #stream !" + me + " !url:" +
-					url + " " + title + " by " + artist;
-				dump(message + "\n");
-				XMPP.send(murmuration.account.address,
-					<message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);
-			}
-		};
-		xhr.send(null);
+		var url = "http://" + host + ":" + p + "/contents/items/" + item.guid;
+		var message = "d " + user + " #stream !" + me + " !url:" +
+			url + " " + title + " by " + artist;
+		dump(message + "\n");
+		XMPP.send(murmuration.account.address,
+			<message to="murmuration@skunk.grommit.com"><body>{message}</body></message>);
 	}
 }
 
