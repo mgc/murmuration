@@ -557,6 +557,8 @@ var Murmur = {
 			var userName =
 				XMPP.nickFor(murmuration.account.jid, presence.stanza.@from);
 			var doc = window.top.document;
+			if (typeof(murmuration.account.friends[userName]) == "undefined") 
+				continue;
 			laconica.callWithUserData(userName, function(user) {
 				numContacts++;
 				var userDiv = doc.createElement("vbox");

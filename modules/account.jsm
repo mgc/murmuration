@@ -67,7 +67,9 @@ var account = {
     // bad idea.  Make sure this is fixed before any public release.
     var observerService = Cc["@mozilla.org/observer-service;1"]
                             .getService(Ci.nsIObserverService);
-    observerService.addObserver(this, "cookie-changed", false);    
+    observerService.addObserver(this, "cookie-changed", false);
+
+	this._friends = this._loadFriends();
   }, 
 
   finish: function() {
@@ -108,6 +110,33 @@ var account = {
 
   get isConfigured() {
     return this.userName && this.password;
+  },
+
+  get friends() {
+    return this._friends;
+  },
+
+  _loadFriends: function() {
+    var username = this.userName;
+	var password = this.password;
+    var url = "http://skunk.grommit.com/api/friends/nicks/" +username+ ".json";
+	var self = this;
+    var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+                .createInstance(Ci.nsIXMLHttpRequest);
+    xhr.open("GET", url, true);
+    xhr.onreadystatechange = function() {
+      if (this.readyState != 4)
+	    return;
+      if (this.status == 200) {
+        var nativeJSON = Cc["@mozilla.org/dom/json;1"]
+                          .createInstance(Ci.nsIJSON);
+		self._friends = new Array();
+		for each (var friend in nativeJSON.decode(this.responseText)) {
+			self._friends[friend.screen_name] = friend;
+		}
+	  }
+	}
+	xhr.send(null);
   },
 
   addListener: function(listener) {
