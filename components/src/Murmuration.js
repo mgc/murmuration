@@ -49,8 +49,8 @@ Murmuration.prototype.constructor = Murmuration;
 var listeners = [];
 
 Murmuration.prototype = {
-	classDescription: "Playlist Commands Example",
-	classID:          Components.ID("{4c9d953e-1dd2-11b2-96a2-9476767fdc26}"),
+	classDescription: "Murmuration",
+	classID:          Components.ID("{98dde7c8-1dd1-11b2-a410-f2acf2272506}"),
 	contractID:       "@songbirdnest.com/Songbird/Murmuration;1", 
 
 	m_Library : null,
@@ -90,13 +90,12 @@ Murmuration.prototype = {
 
 		// Make a new command builder
 		this.m_Commands = new PlaylistCommandsBuilder();
+		this.m_CommandsSmart = new PlaylistCommandsBuilder();
 
-		/*
 		// Append the default commands
 		var defaultCommands = mgr.request(kPlaylistCommands.MEDIAITEM_DEFAULT);
 		this.m_Commands.appendPlaylistCommands(null, "library_cmdobj_defaults",
 				defaultCommands);
-		*/
 
 		// Make a new command builder for the Murmuration commands
 		this.m_MurmurCommands = new PlaylistCommandsBuilder();
@@ -113,11 +112,13 @@ Murmuration.prototype = {
 
 		this.m_Commands.appendPlaylistCommands(null, "library_cmdmurmurs",
 				this.m_MurmurCommands);
+		this.m_CommandsSmart.appendPlaylistCommands(null, "library_cmdmurmurs",
+				this.m_MurmurCommands);
 
 		mgr.registerPlaylistCommandsMediaItem(this.m_Library.guid, 
 				"", this.m_Commands);
-		mgr.registerPlaylistCommandsMediaItem("", "smart", this.m_Commands);
 		mgr.registerPlaylistCommandsMediaItem("", "simple", this.m_Commands);
+		mgr.registerPlaylistCommandsMediaItem("", "smart",this.m_CommandsSmart);
 
 		this.hostname = Cc["@mozilla.org/network/dns-service;1"].
             getService(Components.interfaces.nsIDNSService).myHostName;
