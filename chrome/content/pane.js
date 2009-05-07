@@ -557,7 +557,8 @@ var Murmur = {
 			var userName =
 				XMPP.nickFor(murmuration.account.jid, presence.stanza.@from);
 			var doc = window.top.document;
-			if (typeof(murmuration.account.friends[userName]) == "undefined") 
+			if (typeof(murmuration.account.friends[userName]) == "undefined" ||
+					userName == murmuration.account.userName) 
 				continue;
 			laconica.callWithUserData(userName, function(user) {
 				numContacts++;
@@ -569,7 +570,14 @@ var Murmur = {
 				img.setAttributeNS(MRMR_NS, "username", user.screen_name);
 				var name = doc.createElement("label");
 				name.className = "user-name";
-				name.setAttribute("value", user.screen_name);
+
+				// wrap in case it's > 9 chars
+				var displayname = user.screen_name;
+				if (displayname.length > 8) {
+					dump("wrapping " + displayname + "\n");
+					displayname = displayname.substr(0, 7) + "..";
+				}
+				name.setAttribute("value", displayname);
 
 				userDiv.appendChild(img);
 				userDiv.appendChild(name);
