@@ -100,33 +100,33 @@ function finish() {
 
 function receiveNotification(m) {
 	var now = Math.floor(Date.now()/1000);
-	dump("notification @ " + now + " ?= " + notificationFloodTimestamp + 
-			" // " + notificationFloodProtection + "\n");
+	//dump("notification @ " + now + " ?= " + notificationFloodTimestamp + 
+	//		" // " + notificationFloodProtection + "\n");
 	// If we receive >= 10 notifications in the same second, then enable
 	// flood protection
 	if (notificationFloodTimestamp == now) {
 		// if this notification is at the same time, then increment the counter
 		if (notificationFloodCounter++ == 10) {
-			dump("Notifying of flood\n");
+			//dump("Notifying of flood\n");
 			alertService.showAlertNotification("", "murmuration",
 				"Flood protection activated");
 			notificationFloodProtection = true;
 			return;
 		} else if (notificationFloodCounter > 10) {
-			dump("Within flood protection window\n");
+			//dump("Within flood protection window\n");
 			return;
 		}
 	} else if (notificationFloodProtection) {
 		// keep flood protection enabled for a rolling 10 second window
 		if (Math.abs(notificationFloodTimestamp - now) < 10) {
-			dump("Within flood protection window\n");
+			//dump("Within flood protection window\n");
 			notificationFloodTimestamp = now;
 			return;
 		}
 	
 		// if we got here then we're past the 5 second window, so reset the
 		// counters
-		dump("Resetting flood protection\n");
+		//dump("Resetting flood protection\n");
 		notificationFloodCounter = 0;
 		notificationFloodTimestamp = now;
 		notificationFloodProtection = false;
@@ -136,7 +136,7 @@ function receiveNotification(m) {
 
 	// ignore Murmuration DM responses
 	var msg = m.stanza.body.toString();
-	dump("RECVD:" + msg + "\n");
+	//dump("RECVD:" + msg + "\n");
 	if (/^\[Murmuration\]/.exec(msg)) {
 		dump("Ignoring direct message response\n");
 		return;
