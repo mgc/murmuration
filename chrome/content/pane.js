@@ -218,10 +218,18 @@ var activityWidget = {
 		if (result !== null && result.length === 2)
 			text = result[1];
 		
-		var command = /#(\w+) (.*)$/.exec(text);
+		var command = /#(\w+)\s*(.*)?$/.exec(text);
 		var actionIcon = $(".action img", node);
 		if (command) {
 			switch (command[1]) {
+				case "banned":
+					text = text.replace("#banned ", "banned");
+					actionIcon.addClass("ban");
+					break;
+				case "loved":
+					text = text.replace("#loved ", "loved");
+					actionIcon.addClass("love");
+					break;
 				case "tagged":
 					text = text.replace("#tagged ", "tagged: ");
 					actionIcon.addClass("tag");

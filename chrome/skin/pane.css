@@ -146,6 +146,26 @@ div.action img.tag {
 	float: left;
 	margin-right: 4px;
 }
+div.action img.love {
+	min-height: 16px;
+	min-width: 16px;
+	background-position: -16px 0px;
+	background-repeat: no-repeat;
+	background-image: url(chrome://sb-lastfm/skin/button-love.png);
+	display: inline-block;
+	float: left;
+	margin-right: 4px;
+}
+div.action img.ban {
+	min-height: 16px;
+	min-width: 16px;
+	background-position: -16px 0px;
+	background-repeat: no-repeat;
+	background-image: url(chrome://sb-lastfm/skin/button-ban.png);
+	display: inline-block;
+	float: left;
+	margin-right: 4px;
+}
 div.action img.list {
 	min-height: 16px;
 	min-width: 16px;
