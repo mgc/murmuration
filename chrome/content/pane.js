@@ -223,11 +223,11 @@ var activityWidget = {
 		if (command) {
 			switch (command[1]) {
 				case "banned":
-					text = text.replace("#banned ", "banned");
+					text = text.replace("#banned", "banned");
 					actionIcon.addClass("ban");
 					break;
 				case "loved":
-					text = text.replace("#loved ", "loved");
+					text = text.replace("#loved", "loved");
 					actionIcon.addClass("love");
 					break;
 				case "tagged":
