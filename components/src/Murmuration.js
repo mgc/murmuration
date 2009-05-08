@@ -101,14 +101,15 @@ Murmuration.prototype = {
 		this.m_MurmurCommands = new PlaylistCommandsBuilder();
 		// Make a separator, and add our Murmuration commands
 		this.m_MurmurCommands.appendSeparator(null, "murmur_separator");
-		this.m_MurmurCommands.
-			appendAction(null,
+		this.m_MurmurCommands.appendAction(null,
 					"murmur_sharetrack",
 					"Murmur Track",
 					"Share this track on Murmuration",
 					this.MurmurTrack_STREAM);
 					//this.MurmurTrack_POST);
-		//this.m_MurmurCommands.setVisibleCallback(plCmd_IsAnyTrackSelected);
+		this.m_MurmurCommands.setCommandEnabledCallback(null,
+					"murmur_sharetrack",
+					plCmd_IsAnyTrackSelected);
 
 		this.m_Commands.appendPlaylistCommands(null, "library_cmdmurmurs",
 				this.m_MurmurCommands);
@@ -257,7 +258,7 @@ function NSGetModule(compMgr, fileSpec) {
 
 // Returns true when at least one track is selected in the playlist
 function plCmd_IsAnyTrackSelected(aContext, aSubMenuId, aCommandId, aHost) {
-  return ( unwrap(aContext.playlist).tree.currentIndex != -1 );
+  return ( unwrap(aContext.playlist).mediaListView.selection.count != 0 );
 }
 
 function unwrap(obj) {
