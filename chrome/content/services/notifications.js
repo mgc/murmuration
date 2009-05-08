@@ -39,8 +39,12 @@ var newLists = []
 
 function init() {
   // XXX This throws an exception when growl isn't installed?
-  alertService = Cc["@mozilla.org/alerts-service;1"]
-                    .getService(Ci.nsIAlertsService);
+  try {
+	  alertService = Cc["@mozilla.org/alerts-service;1"]
+						.getService(Ci.nsIAlertsService);
+  } catch (e) {
+	  alertService = null;
+  }
 
   channel = XMPP.createChannel();
 
@@ -99,6 +103,9 @@ function finish() {
 // ----------------------------------------------------------------------
 
 function receiveNotification(m) {
+	if (!alertService)
+		return;
+
 	var now = Math.floor(Date.now()/1000);
 	//dump("notification @ " + now + " ?= " + notificationFloodTimestamp + 
 	//		" // " + notificationFloodProtection + "\n");
@@ -153,11 +160,19 @@ function receiveNotification(m) {
 		msg = username + " shared the following track with you: " + msg;
 	}
 
-	var txt = msg.replace(/#r?id\d+/g, "");
-	alertService.showAlertNotification(
-		"",
-		"Notification",
-		txt
+	//var txt = msg.replace(/#r?id\d+/g, "");
+	var txt = murmuration.formatMsgForDisplay(msg);
+
+	if (extpref.getBoolPref("personalise_notifications"))
+	{
+		var atomNS = new Namespace("http://www.w3.org/2005/Atom");
+		var x = m.stanza.atomNS::entry.atomNS::source;
+		var userAvatar = x.atomNS::icon.toString();
+		var userName = x.atomNS::author.atomNS::name.toString();
+		alertService.showAlertNotification(userAvatar, userName, txt);
+	} else {
+		alertService.showAlertNotification("", "Notification", txt);
+	}
     /*
       in AString imageUrl, 
       in AString title, 
@@ -167,7 +182,6 @@ function receiveNotification(m) {
       [optional] in nsIObserver alertListener,
       [optional] in AString name New in Firefox 3
       */
-  );
 }
 
 
@@ -196,8 +210,10 @@ function onItemUpdated(aMediaList, aMediaItem, aProperties) {
   if (batchCount == 0) {
     for (var prop in ArrayConverter.JSEnum(aProperties)) {
       if (prop.QueryInterface(Ci.sbIProperty).id == SBProperties.rating) {
-        var rating = parseInt(aMediaItem.getProperty(SBProperties.rating));
-        var ratingText = rating;
+        //var rating = parseInt(aMediaItem.getProperty(SBProperties.rating));
+        var ratingText = aMediaItem.getProperty(SBProperties.rating);
+		if (ratingText == null)
+			ratingText = 0;
         
 /* Booo, doesn't work
         ratingText = "";
