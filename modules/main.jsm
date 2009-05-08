@@ -173,6 +173,7 @@ var murmuration = {
 			// strip #played tags, don't bother including an action icon since
 			// this will be the most commonly displayed notice
 			txt = txt.replace("#played", "");
+			txt = txt.replace(/^(\w+:)/, "");
 		} else {
 			// matches the following commands
 			//   * #tagged foo,bar
