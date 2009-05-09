@@ -164,9 +164,14 @@ var murmuration = {
     services: services,
     account: account,
 	ip: null,
+	processTags: function(txt) {
+	},
 	formatMsgForDisplay: function(txt, actionIcon) {
 		// strip #rid reply id tags
 		txt = txt.replace(/#r?id\d+/g, "");
+
+		// strip mediaitem guids
+		txt = txt.replace(/#guid [\w\-]+/, "");
 
 		// tag => action parsing
 		if (txt.indexOf("#played") >= 0) {
@@ -187,7 +192,19 @@ var murmuration = {
 			
 			var command = /#(\w+)\s*(.*)?$/.exec(txt);
 			if (command) {
+				if (actionIcon)
+					actionIcon.removeClass("none");
 				switch (command[1]) {
+					case "thumbsup":
+						txt = txt.replace("#thumbsup", "");
+						if (actionIcon)
+							actionIcon.addClass("thumbsup");
+						break;
+					case "thumbsdown":
+						txt = txt.replace("#thumbsdown", "");
+						if (actionIcon)
+							actionIcon.addClass("thumbsdown");
+						break;
 					case "banned":
 						txt = txt.replace("#banned", "banned");
 						if (actionIcon)

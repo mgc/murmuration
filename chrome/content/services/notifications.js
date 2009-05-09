@@ -290,7 +290,7 @@ function onLoveBan(aItem, love, existing) {
 function onEntriesAdded(aEntries) {
   for (var entry in ArrayConverter.JSEnum(aEntries)) {
     entry = entry.QueryInterface(Ci.sbIPlaybackHistoryEntry);
-    sendNotification(entry.item, " #played");
+    sendNotification(entry.item, " #played #guid " + entry.item.guid);
   }
 }
 

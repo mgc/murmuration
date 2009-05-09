@@ -42,6 +42,30 @@ Murmuration.addComment = function(event) {
 	document.getElementById("murmuration-comment-panel").hidePopup();
 }
 
+Murmuration.thumbsUp = function(event) {
+	var textbox = document.getElementById("new-comment");
+	var comment = textbox.value;
+	var user = textbox.getAttributeNS(MRMR_NS, "user");
+	var noticeId = textbox.getAttributeNS(MRMR_NS, "noticeId");
+	var message = "@" + user + " " + comment + " #thumbsup #rid" + noticeId;
+	dump(message + "\n");
+	XMPP.send(murmuration.account.address,
+		<message to="murmuration@skunk.grommit.com"><body>{message}</body></message>); 
+	document.getElementById("murmuration-comment-panel").hidePopup();
+}
+
+Murmuration.thumbsDown = function(event) {
+	var textbox = document.getElementById("new-comment");
+	var comment = textbox.value;
+	var user = textbox.getAttributeNS(MRMR_NS, "user");
+	var noticeId = textbox.getAttributeNS(MRMR_NS, "noticeId");
+	var message = "@" + user + " " + comment + " #thumbsdown #rid" + noticeId;
+	dump(message + "\n");
+	XMPP.send(murmuration.account.address,
+		<message to="murmuration@skunk.grommit.com"><body>{message}</body></message>); 
+	document.getElementById("murmuration-comment-panel").hidePopup();
+}
+
 /**
  * UI controller that is loaded into the main player window
  */

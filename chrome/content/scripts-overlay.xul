@@ -20,10 +20,16 @@
 		<stack>
 			<vbox id="background" flex="1" />
 			<vbox id="comment-vbox">
-				<label value="Snark away!" />
-				<textbox id="new-comment" type="search" searchbutton="true"
-					onkeypress="if (event.keyCode == 13) Murmuration.addComment(event)"
+				<label value="Reply" />
+				<hbox align="center">
+					<textbox id="new-comment" type="search" searchbutton="true"
+						onkeypress="if (event.keyCode == 13) Murmuration.addComment(event)"
 					/>
+					<image src="chrome://murmuration/skin/thumb_down.png"
+						onclick="Murmuration.thumbsDown(event)" />
+					<image src="chrome://murmuration/skin/thumb_up.png"
+						onclick="Murmuration.thumbsUp(event)" />
+				</hbox>
 			</vbox>
 		</stack>
 	</panel>

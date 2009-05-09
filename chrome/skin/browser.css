@@ -20,6 +20,16 @@ panel#murmuration-comment-panel {
     color: #eee;
 }
 
+#comment-vbox > hbox > textbox {
+	height: 20px;
+}
+
+#comment-vbox > hbox > image {
+	width: 16px;
+	height: 16px;
+	-moz-box-flex: 0;
+}
+
 /* MURMUR/SHARE PANEL */
 panel#murmuration-share-panel {
     -moz-border-radius: 5px;

@@ -202,6 +202,7 @@ var activityWidget = {
 		});
 	}
 
+	murmuration.processTags(text);
 	var actionIcon = $(".action img", node);
 	text = murmuration.formatMsgForDisplay(text, actionIcon);
 	

@@ -136,50 +136,51 @@ img.reply-icon {
 	padding-top: 5px;
 }
 
-div.action img.tag {
+div.action img.thumbsup,
+div.action img.thumbsdown,
+div.action img.tag,
+div.action img.love,
+div.action img.ban,
+div.action img.list
+{
 	min-height: 16px;
 	min-width: 16px;
+	display: inline-block;
+	float: left;
+	margin-right: 4px;
+}
+div.action img.thumbsup {
+	background-repeat: no-repeat;
+	background-image: url(chrome://murmuration/skin/thumb_up.png);
+}
+div.action img.thumbsdown {
+	background-repeat: no-repeat;
+	background-image: url(chrome://murmuration/skin/thumb_down.png);
+}
+div.action img.tag {
 	background-position: -16px -16px;
 	background-repeat: no-repeat;
 	background-image: url(chrome://sb-lastfm/skin/button-tag.png);
-	display: inline-block;
-	float: left;
-	margin-right: 4px;
 }
 div.action img.love {
-	min-height: 16px;
-	min-width: 16px;
 	background-position: -16px 0px;
 	background-repeat: no-repeat;
 	background-image: url(chrome://sb-lastfm/skin/button-love.png);
-	display: inline-block;
-	float: left;
-	margin-right: 4px;
 }
 div.action img.ban {
-	min-height: 16px;
-	min-width: 16px;
 	background-position: -16px 0px;
 	background-repeat: no-repeat;
 	background-image: url(chrome://sb-lastfm/skin/button-ban.png);
-	display: inline-block;
-	float: left;
-	margin-right: 4px;
 }
 div.action img.list {
-	min-height: 16px;
-	min-width: 16px;
 	background-repeat: no-repeat;
 	background-image: url(chrome://songbird/skin/service-pane/icon-playlist.png);
-	display: inline-block;
-	float: left;
-	margin-right: 4px;
 }
 div.action img.rating {
 	min-width: 70px;
 	min-height: 18px;
-	background-repeat: no-repeat;
 	display: inline-block;
+	background-repeat: no-repeat;
 	background-image: url(chrome://songbird/skin/media-control-pane/button-faceplate-ratings.png);
 }
 div.action img.rating-0 { background-position:0px -18px; }
