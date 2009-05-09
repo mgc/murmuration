@@ -22,16 +22,13 @@ sbMurmurationUtilities::GetIPAddress(nsISocketTransport *socket, nsAString& _ret
 	char      buf[64];
 
 	nsresult rv = socket->GetSelfAddr(&ipAddr);
-	if (NS_SUCCEEDED(rv)) {
-		rv = PR_NetAddrToString(&ipAddr, buf, sizeof(buf));
-		if (NS_SUCCEEDED(rv)) {
-			_retval.AssignLiteral(buf);
-			return NS_OK;
-		} else {
-			return rv;
-		}
-	} else {
-		return rv;
-	}
+	NS_ENSURE_SUCCESS(rv, rv);
+
+	PRStatus success;
+	success = PR_NetAddrToString(&ipAddr, buf, sizeof(buf));
+	NS_ENSURE_TRUE(success == PR_SUCCESS, NS_ERROR_FAILURE);
+
+	CopyASCIItoUTF16(nsDependentCString(buf), _retval);
+	return NS_OK;
 }
 
