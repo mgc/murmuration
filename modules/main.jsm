@@ -72,18 +72,18 @@ function init() {
   loadServices();
 
   var connectionObserver = {
-	  observe: function(subject, topic, data) {
-		  if (topic == "connector-connected") {
-			  // Get the connector somehow
-			  var connector = subject;
+      observe: function(subject, topic, data) {
+          if (topic == "connector-connected") {
+              // Get the connector somehow
+              var connector = subject;
 
-			  // Find out the IP address for this connector
-			  var svc = Cc["@songbirdnest.com/Songbird/MurmurationUtilities;1"]
-								   .createInstance(Ci.sbIMurmurationUtilities);
-			  murmuration.ip = svc.getIPAddress(connector._socket._transport);
-			  dump("setting ip to:" + murmuration.ip + "\n");
-		  }
-	  }
+              // Find out the IP address for this connector
+              var svc = Cc["@songbirdnest.com/Songbird/MurmurationUtilities;1"]
+                                   .createInstance(Ci.sbIMurmurationUtilities);
+              murmuration.ip = svc.getIPAddress(connector._socket._transport);
+              dump("setting ip to:" + murmuration.ip + "\n");
+          }
+      }
   };
   service.addObserver(connectionObserver, 'not-used', false);
 
@@ -163,74 +163,74 @@ function restoreOnlineState() {
 var murmuration = {
     services: services,
     account: account,
-	ip: null,
-	formatMsgForDisplay: function(txt, actionIcon) {
-		// strip #rid reply id tags
-		txt = txt.replace(/#r?id\d+/g, "");
+    ip: null,
+    formatMsgForDisplay: function(txt, actionIcon) {
+        // strip #rid reply id tags
+        txt = txt.replace(/#r?id\d+/g, "");
 
-		// tag => action parsing
-		if (txt.indexOf("#played") >= 0) {
-			// strip #played tags, don't bother including an action icon since
-			// this will be the most commonly displayed notice
-			txt = txt.replace("#played", "");
-			txt = txt.replace(/^(\w+:)/, "");
-		} else {
-			// matches the following commands
-			//   * #tagged foo,bar
-			//   * #rated 0-9
-			// and probably more than it should... 
+        // tag => action parsing
+        if (txt.indexOf("#played") >= 0) {
+            // strip #played tags, don't bother including an action icon since
+            // this will be the most commonly displayed notice
+            txt = txt.replace("#played", "");
+            txt = txt.replace(/^(\w+:)/, "");
+        } else {
+            // matches the following commands
+            //   * #tagged foo,bar
+            //   * #rated 0-9
+            // and probably more than it should... 
 
-			// trim leading/trailing whitespace
-			var result = txt.match(/^\s*(.*\S)\s*$/);
-			if (result !== null && result.length === 2)
-				txt = result[1];
-			
-			var command = /#(\w+)\s*(.*)?$/.exec(txt);
-			if (command) {
-				switch (command[1]) {
-					case "banned":
-						txt = txt.replace("#banned", "banned");
-						if (actionIcon)
-							actionIcon.addClass("ban");
-						break;
-					case "loved":
-						txt = txt.replace("#loved", "loved");
-						if (actionIcon)
-							actionIcon.addClass("love");
-						break;
-					case "tagged":
-						txt = txt.replace("#tagged ", "tagged: ");
-						if (actionIcon)
-							actionIcon.addClass("tag");
-						break;
-					case "rated":
-						if (actionIcon) {
-							txt = txt.replace("#rated " + command[2], "");
-							actionIcon.addClass("rating");
-							actionIcon.addClass("rating-" + command[2]);
-						} else {
-							txt = txt.replace("#rated " + command[2],
-									"rated " + command[2]);
-						}
-						break;
-					case "list":
-						if (actionIcon)
-							actionIcon.addClass("list");
-						txt = txt.replace("#list " + command[2], "");
-						if (command[2] == "1")
-							txt = "created playlist: " + txt;
-						else
-							txt = "deleted playlist: " + txt;
-						break;
-					default:
-						dump("Unknown command: " + command[1] + "\n");
-						dump("txt: " + txt + "\n");
-				}
-			}
-		}
+            // trim leading/trailing whitespace
+            var result = txt.match(/^\s*(.*\S)\s*$/);
+            if (result !== null && result.length === 2)
+                txt = result[1];
+            
+            var command = /#(\w+)\s*(.*)?$/.exec(txt);
+            if (command) {
+                switch (command[1]) {
+                    case "banned":
+                        txt = txt.replace("#banned", "banned");
+                        if (actionIcon)
+                            actionIcon.addClass("ban");
+                        break;
+                    case "loved":
+                        txt = txt.replace("#loved", "loved");
+                        if (actionIcon)
+                            actionIcon.addClass("love");
+                        break;
+                    case "tagged":
+                        txt = txt.replace("#tagged ", "tagged: ");
+                        if (actionIcon)
+                            actionIcon.addClass("tag");
+                        break;
+                    case "rated":
+                        if (actionIcon) {
+                            txt = txt.replace("#rated " + command[2], "");
+                            actionIcon.addClass("rating");
+                            actionIcon.addClass("rating-" + command[2]);
+                        } else {
+                            txt = txt.replace("#rated " + command[2],
+                                    "rated " + command[2]);
+                        }
+                        break;
+                    case "list":
+                        if (actionIcon)
+                            actionIcon.addClass("list");
+                        txt = txt.replace("#list " + command[2], "");
+                        if (command[2] == "1")
+                            txt = "created playlist: " + txt;
+                        else
+                            txt = "deleted playlist: " + txt;
+                        break;
+                    default:
+                        dump("Unknown command: " + command[1] + "\n");
+                        dump("txt: " + txt + "\n");
+                }
+            }
+        }
 
-		return txt;
-	}
+        return txt;
+    }
 };
 
 init();
