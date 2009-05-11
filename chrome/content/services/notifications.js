@@ -89,13 +89,15 @@ function finish() {
     channel.release();
     delete alertsService;
     LibraryUtils.mainLibrary.removeListener(this);
-	var lfm = Cc["@songbirdnest.com/lastfm;1"].getService().wrappedJSObject;
-	lfm.listeners.remove(this);
-	
-	var playbackHistory =
-  	      Cc['@songbirdnest.com/Songbird/PlaybackHistoryService;1']
-  	      .getService(Ci.sbIPlaybackHistoryService);
-	playbackHistory.removeListener(this);
+    if ("sbILastFm" in Ci) {
+      var lfm = Cc["@songbirdnest.com/lastfm;1"].getService().wrappedJSObject;
+      lfm.listeners.remove(this);
+    }
+
+    var playbackHistory =
+      Cc['@songbirdnest.com/Songbird/PlaybackHistoryService;1']
+        .getService(Ci.sbIPlaybackHistoryService);
+    playbackHistory.removeListener(this);
 }
 
 

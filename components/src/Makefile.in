@@ -35,9 +35,9 @@ DYNAMIC_LIB = $(target_name)$(DLL_SUFFIX)
 DYNAMIC_LIB_OBJS = $(CPP_SRCS:.cpp=$(OBJ_SUFFIX))
 
 # our component depends on these mozilla libraries
-DYNAMIC_LIB_EXTRA_IMPORTS = nspr4 \
+DYNAMIC_LIB_EXTRA_IMPORTS = xpcomglue_s \
                             xpcom \
-                            xpcomglue_s \
+                            nspr4 \
                             $(NULL)
 
 DYNAMIC_LIB_IMPORT_PATHS = $(MOZSDK_LIB_DIR) \

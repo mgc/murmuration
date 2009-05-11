@@ -72,18 +72,18 @@ function init() {
   loadServices();
 
   var connectionObserver = {
-	  observe: function(subject, topic, data) {
-		  if (topic == "connector-connected") {
-			  // Get the connector somehow
-			  var connector = subject;
+      observe: function(subject, topic, data) {
+          if (topic == "connector-connected") {
+              // Get the connector somehow
+              var connector = subject;
 
-			  // Find out the IP address for this connector
-			  var svc = Cc["@songbirdnest.com/Songbird/MurmurationUtilities;1"]
-								   .createInstance(Ci.sbIMurmurationUtilities);
-			  murmuration.ip = svc.getIPAddress(connector._socket._transport);
-			  dump("setting ip to:" + murmuration.ip + "\n");
-		  }
-	  }
+              // Find out the IP address for this connector
+              var svc = Cc["@songbirdnest.com/Songbird/MurmurationUtilities;1"]
+                                   .createInstance(Ci.sbIMurmurationUtilities);
+              murmuration.ip = svc.getIPAddress(connector._socket._transport);
+              dump("setting ip to:" + murmuration.ip + "\n");
+          }
+      }
   };
   service.addObserver(connectionObserver, 'not-used', false);
 

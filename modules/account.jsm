@@ -37,11 +37,20 @@ var EXPORTED_SYMBOLS = ['account'];
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
+var Cctor = Components.Constructor
 var srvObserver = Cc['@mozilla.org/observer-service;1']
     .getService(Ci.nsIObserverService);
 var prefServices = Cc['@mozilla.org/preferences-service;1']
     .getService(Ci.nsIPrefService)
     .getBranch('extensions.murmuration.');
+
+var loginMgr = Cc["@mozilla.org/login-manager;1"]
+                 .getService(Ci.nsILoginManager);
+
+var nsLoginInfo = new Cctor("@mozilla.org/login-manager/loginInfo;1",
+                            Ci.nsILoginInfo,
+                            "init");
+
 
 Cu.import('resource://xmpp4moz/xmpp.jsm');
 
@@ -55,11 +64,31 @@ var account = {
   // ----------------------------------------------------------------------
   _channel: null,
   _listeners: [],
+  _loginInfo: null,
+  _friends: [],
   
   // INITIALIZATION
   // ----------------------------------------------------------------------
 
   init: function() {
+    // find saved logins
+    var logins = loginMgr.findLogins({},
+                                     "xmpp://" + SERVER,
+                                     null,
+                                     "xmpp://" + SERVER);
+    if (logins.length) {
+      // XXX Mook: assume one login for now
+      this._loginInfo = logins[0];
+    } else {
+      this._loginInfo = new nsLoginInfo("xmpp://" + SERVER,
+                                        null,
+                                        "xmpp://" + SERVER,
+                                        null,
+                                        null,
+                                        "",
+                                        "");
+    }
+    
     this._channel = XMPP.createChannel();
     
     // XXX Megahack TODO.  To get things up and running the server
@@ -69,7 +98,7 @@ var account = {
                             .getService(Ci.nsIObserverService);
     observerService.addObserver(this, "cookie-changed", false);
 
-	this._friends = this._loadFriends();
+    this._loadFriends();
   }, 
 
   finish: function() {
@@ -88,28 +117,65 @@ var account = {
   },
   
   get address() {
-    var user = this.userName;
-    return (user) ? user + "@" + SERVER : null;
+    if (this.isConfigured) {
+      return this._loginInfo.username +
+             "@" +
+             this._loginInfo.hostname.replace(/^xmpp:\/\//, '');
+    }
+    return null;
   },
   
   get userName() {
-    return prefServices.getCharPref("username");
+    return this._loginInfo.username;
   },
   
   get password() {
-    return prefServices.getCharPref("password");    
+    return this._loginInfo.password;
   },
   
   set userName(value) {
-    return prefServices.setCharPref("username", value);
+    // this is kinda ridiculous
+    var newLogin = new nsLoginInfo(this._loginInfo.hostname,
+                                   this._loginInfo.formSubmitURL,
+                                   this._loginInfo.httpRealm,
+                                   value,
+                                   this._loginInfo.password,
+                                   this._loginInfo.usernameField,
+                                   this._loginInfo.passwordField);
+    if (this.isConfigured) {
+      loginMgr.modifyLogin(this._loginInfo, newLogin);
+    } else {
+      if (newLogin.username !== null && newLogin.password !== null) {
+        loginMgr.addLogin(newLogin);
+      }
+    }
+    this._loginInfo = newLogin;
+    return this._loginInfo.username;
   },
 
   set password(value) {
-    return prefServices.setCharPref("password", value);
+    // this is kinda ridiculous
+    var newLogin = new nsLoginInfo(this._loginInfo.hostname,
+                                   this._loginInfo.formSubmitURL,
+                                   this._loginInfo.httpRealm,
+                                   this._loginInfo.username,
+                                   value,
+                                   this._loginInfo.usernameField,
+                                   this._loginInfo.passwordField);
+    if (this.isConfigured) {
+      loginMgr.modifyLogin(this._loginInfo, newLogin);
+    } else {
+      if (newLogin.username !== null && newLogin.password !== null) {
+        loginMgr.addLogin(newLogin);
+      }
+    }
+    this._loginInfo = newLogin;
+    return this._loginInfo.password;
   },
 
   get isConfigured() {
-    return this.userName && this.password;
+    // force to bool, don't accidentally leak the password
+    return !!(this.userName && this.password);
   },
 
   get friends() {
@@ -118,25 +184,25 @@ var account = {
 
   _loadFriends: function() {
     var username = this.userName;
-	var password = this.password;
-    var url = "http://skunk.grommit.com/api/friends/nicks/" +username+ ".json";
-	var self = this;
+    var password = this.password;
+    var url = "http://" + SERVER + "/api/friends/nicks/" +username+ ".json";
+    var self = this;
     var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
                 .createInstance(Ci.nsIXMLHttpRequest);
     xhr.open("GET", url, true);
     xhr.onreadystatechange = function() {
       if (this.readyState != 4)
-	    return;
+        return;
       if (this.status == 200) {
         var nativeJSON = Cc["@mozilla.org/dom/json;1"]
                           .createInstance(Ci.nsIJSON);
-		self._friends = new Array();
-		for each (var friend in nativeJSON.decode(this.responseText)) {
-			self._friends[friend.screen_name] = friend;
-		}
-	  }
-	}
-	xhr.send(null);
+        self._friends = new Array();
+        for each (var friend in nativeJSON.decode(this.responseText)) {
+            self._friends[friend.screen_name] = friend;
+        }
+      }
+    }
+    xhr.send(null);
   },
 
   addListener: function(listener) {
@@ -171,7 +237,7 @@ var account = {
   observe: function(subject, topic, data) {
     if (topic == "cookie-changed" && (data == "added" || data == "changed")) {
       var cookie = subject.QueryInterface(Components.interfaces.nsICookie);
-      if (cookie.host == ".skunk.grommit.com" && cookie.name == "murmurationaccount") {
+      if (cookie.host == ("." + SERVER) && cookie.name == "murmurationaccount") {
 
         if (this.jid && XMPP.isUp(this.jid)) {
           XMPP.down(this.jid);
@@ -184,25 +250,25 @@ var account = {
         if (this.isConfigured) {
           // Hack: force this account into the XMPP settings
           var pref = Cc['@mozilla.org/preferences-service;1']
-              .getService(Ci.nsIPrefService)
-              .getBranch('xmpp.account.');
+                       .getService(Ci.nsIPrefService)
+                       .getBranch('xmpp.account.');
 
           // Check to see if we already have an account registered so we
           // don't create multiple xmpp accounts for the same account
-		  var existing = false;
-		  var self = this;
-		  XMPP.accounts.forEach(function(a) {
+          var existing = false;
+          var self = this;
+          XMPP.accounts.forEach(function(a) {
             var aJid = pref.getCharPref(a.key + '.address') + "/" +
-				pref.getCharPref(a.key + '.resource');
-			dump("checking " + aJid + " against" + self.jid + "\n");
-			if (aJid == self.jid) {
-			  existing = true;
-			}
-		  });
-		  if (existing) {
+                pref.getCharPref(a.key + '.resource');
+            dump("checking " + aJid + " against" + self.jid + "\n");
+            if (aJid == self.jid) {
+              existing = true;
+            }
+          });
+          if (existing) {
             dump("ACCOUNT ALREADY EXISTS\n");
-		    return;
-		  }
+            return;
+          }
           dump("Connecting account " + uneval(account) + "\n\n");
 
           var account = {
