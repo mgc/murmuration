@@ -118,19 +118,15 @@ var onlineWidget = {
     // come and go
     // TODO handle multiple accounts
     var controller = this;
-    channel.on({
-      event     : 'presence',
-      direction : 'in',
-      stanza    : function(s) {
-          return true;
-      }
-    }, function(presence) {
-	  var jid = JID(presence.stanza.@from);
-	  if (jid.resource == "SongbirdMurmuration") {
-	  	var nick = jid.username;
-        controller.setPresence(nick, presence.stanza.@type != 'unavailable');
-	  }
-    });
+	channel.on(function(e) {
+		if (e.name != 'presence' || e.direction != 'in')
+			return;
+		var jid = JID(e.stanza.@from);
+		if (jid.resource != "SongbirdMurmuration")
+			return;
+		var nick = jid.username;
+		controller.setPresence(nick, e.stanza.@type != 'unavailable');
+	});
   },
   
   finish: function() {
@@ -259,17 +255,12 @@ var activityWidget = {
     
     // Listen for new notifications  
     // TODO listen only to messages from the murmuration bot?
-    channel.on({
-      event     : 'message',
-      direction : 'in',
-      stanza    : function(s) {
-          return (s.body != undefined ||
-                  s.ns_xhtml_im::html.ns_xhtml::body != undefined);
-      }
-    }, function(m) { 
-      // XXX fix error detection, user lookup
-      var message = m.stanza.body;
+	channel.on(function(e) {
+	  if (e.name != 'message' || e.direction != 'in')
+		return;
 
+      // XXX fix error detection, user lookup
+      var message = e.stanza.body;
 	  var actionCommand = /^#([a-zA-Z]+) !(\w+) (.*)$/.exec(message);
 	  if (actionCommand) {
 	    var cmd = actionCommand[1];
@@ -300,7 +291,7 @@ var activityWidget = {
 			});
 			break;
 	      default:
-			dump("Unknown action command:" + m.stanza.body + "\n");
+			dump("Unknown action command:" + e.stanza.body + "\n");
 		}
 	  } else {
 		  message = /^(\w+):(.*)$/.exec(message);
@@ -433,8 +424,10 @@ var Murmur = {
 			}
 		});
 		for each(var presence in contactPresences) {
-			var userName =
-				XMPP.nickFor(murmuration.account.jid, presence.stanza.@from)
+			var jid = JID(presence.stanza.@from);
+			if (jid.resource != "SongbirdMurmuration")
+				continue;
+			var userName = jid.username;
 			var doc = window.top.document;
 			laconica.callWithUserData(userName, function(user) {
 				var userDiv = doc.createElement("div");
@@ -522,8 +515,10 @@ var Murmur = {
 
 		var numContacts = 0;
 		for each(var presence in contactPresences) {
-			var userName =
-				XMPP.nickFor(murmuration.account.jid, presence.stanza.@from);
+			var jid = JID(presence.stanza.@from);
+			if (jid.resource != "SongbirdMurmuration")
+				continue;
+			var userName = jid.username;
 			var doc = window.top.document;
 			if (typeof(murmuration.account.friends[userName]) == "undefined" ||
 					userName == murmuration.account.userName) 
