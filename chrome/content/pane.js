@@ -107,8 +107,11 @@ var onlineWidget = {
         }
     });
     for each(var presence in contactPresences) {
-      var userName = XMPP.nickFor(murmuration.account.jid, presence.stanza.@from)
-      this.setPresence(userName, true);  
+	  var jid = JID(presence.stanza.@from);
+	  if (jid.resource == "SongbirdMurmuration") {
+	  	var nick = jid.username;
+        this.setPresence(nick, true);  
+	  }
     }
     
     // Hook up a listener so we get notified when people
@@ -122,8 +125,11 @@ var onlineWidget = {
           return true;
       }
     }, function(presence) {
-      var userName = XMPP.nickFor(murmuration.account.jid, presence.stanza.@from)
-      controller.setPresence(userName, presence.stanza.@type != 'unavailable');
+	  var jid = JID(presence.stanza.@from);
+	  if (jid.resource == "SongbirdMurmuration") {
+	  	var nick = jid.username;
+        controller.setPresence(nick, presence.stanza.@type != 'unavailable');
+	  }
     });
   },
   
@@ -340,6 +346,7 @@ var windowController = {
   
   init: function() {
     Components.utils.import('resource://xmpp4moz/xmpp.jsm');
+    Components.utils.import('resource://xmpp4moz/utils.jsm');
     Components.utils.import('resource://murmuration/main.jsm');
 
     channel = XMPP.createChannel();
