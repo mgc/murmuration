@@ -48,14 +48,11 @@ function init() {
 
   channel = XMPP.createChannel();
 
-  channel.on({
-      event     : 'message',
-      direction : 'in',
-      stanza    : function(s) {
-          return (s.body != undefined ||
-                  s.ns_xhtml_im::html.ns_xhtml::body != undefined);
-      }
-  }, function(m) { receiveNotification(m); });
+  channel.on(function(e) {
+    if (e.name != 'message' || e.direction != 'in')
+	  return;
+	receiveNotification(e);
+  });
   
   // Listen for rating events
   LibraryUtils.mainLibrary.addListener(this, false,
