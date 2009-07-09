@@ -27,11 +27,12 @@ CPP_INCLUDES = $(DEPTH)/extensions/murmuration/components/public \
 # build a component (ie: a dynamically loadable module)
 IS_COMPONENT = 1
 
-# build a library
-DYNAMIC_LIB = $(target_name)
+# build a library - DLL_SUFFIX is the platform-specific file extensions for
+# dynamic libraries (.so on unix, .dll on windows, etc)
+DYNAMIC_LIB = $(target_name)$(DLL_SUFFIX)
 
 # compile our C++ files into the component
-#DYNAMIC_LIB_OBJS = $(CPP_SRCS:.cpp=$(OBJ_SUFFIX))
+DYNAMIC_LIB_OBJS = $(CPP_SRCS:.cpp=$(OBJ_SUFFIX))
 
 # our component depends on these mozilla libraries
 DYNAMIC_LIB_EXTRA_IMPORTS = xpcomglue_s \
@@ -60,4 +61,4 @@ SONGBIRD_COMPONENTS = $(EXTRA_SCRIPT_COMPONENTS)
 include $(topsrcdir)/build/rules.mk
 
 libs::
-	$(INSTALL_PROG) $(OUR_DYNAMIC_LIB) $(SONGBIRD_COMPONENTSDIR)
+	$(INSTALL_PROG) $(DYNAMIC_LIB) $(SONGBIRD_COMPONENTSDIR)
